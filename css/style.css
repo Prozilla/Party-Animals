@@ -1,11 +1,22 @@
 :root {
 	--background-color-a: #9b59b6;
 	--background-color-b: #8e44ad;
-	--text-color: white;
+	--text-color-a: white;
+	--text-color-b: black;
 
-	--border-radius: 20px;
-	--title-font: "Rubik Mono One", sans-serif;
-	--body-font: "Rubik", sand-serif;
+	--red: #e74c3c;
+	--orange: #e67e22;
+	--yellow: #f1c40f;
+	--green: #2ecc71;
+	--blue: #3498db;
+	--purple: #9b59b6;
+	--pink: #e78ae7;
+
+	--border-radius-a: 20px;
+	--border-radius-full: 9999px;
+
+	--title-font: "Fredoka One", cursive;
+	--body-font: "Fredoka", sand-serif;
 }
 
 html, body {
@@ -18,7 +29,7 @@ html, body {
 body {
 	margin: 0;
 	padding: 10px 75px 50px 75px;
-	color: var(--text-color);
+	color: var(--text-color-a);
 	font-family: var(--body-font);
 	box-sizing: border-box;
 }
@@ -26,7 +37,6 @@ body {
 h1 {
 	font-family: var(--title-font);
 	font-weight: 400;
-	word-spacing: -12px;
 }
 
 body > div {
@@ -57,10 +67,100 @@ main#games-grid .game {
 	flex-basis: 50%;
     aspect-ratio: 1 / 1;
 	background-color: var(--background-color-b);
-	border-radius: var(--border-radius);
+	border-radius: var(--border-radius-a);
+}
+
+aside#side-menu {
+	display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 aside#side-menu #player-list {
+	padding: 20px;
 	background-color: var(--background-color-b);
-	border-radius: var(--border-radius);
+	border-radius: var(--border-radius-a);
+}
+
+aside#side-menu #player-list > p {
+	font-family: var(--title-font);
+	margin-top: 0;
+}
+
+aside#side-menu #player-list #players {
+	display: flex;
+	gap: 10px;
+	flex-direction: column;
+}
+
+/* Player list */
+.player {
+	display: flex;
+	gap: 10px;
+	padding: 10px;
+	color: var(--text-color-b);
+	background-color: var(--text-color-a);
+	border-radius: var(--border-radius-full);
+}
+
+.player .character {
+	height: 40px;
+	aspect-ratio: 1;
+	border-radius: var(--border-radius-full);
+	background-color: var(--background-color-a);
+	box-sizing: border-box;
+}
+
+.player .character.red {
+	background-color: var(--red);
+}
+.player .character.orange {
+	background-color: var(--orange);
+}
+.player .character.yellow {
+	background-color: var(--yellow);
+}
+.player .character.green {
+	background-color: var(--green);
+}
+.player .character.blue {
+	background-color: var(--blue);
+}
+.player .character.purple {
+	background-color: var(--purple);
+}
+.player .character.pink {
+	background-color: var(--pink);
+}
+
+.player .name, .player .score {
+	margin: 0;
+}
+
+/* Player options */
+#player-options {
+	display: flex;
+	gap: 5px;
+	flex-wrap: wrap;
+}
+
+#player-options #player-name-input {
+	flex: 2;
+	width: 100%;
+}
+
+#player-options #player-name-input #player-name {
+	padding: 5px 10px;
+	outline: none;
+	border: none;
+	border-radius: var(--border-radius-a);
+	/* font-family: var(--body-font); */
+}
+
+#player-options button {
+	width: calc(50% - 5px);
+	border: none;
+	border-radius: var(--border-radius-a);
+	font-family: var(--title-font);
+	cursor: pointer;
 }
