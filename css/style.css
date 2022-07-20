@@ -1,0 +1,66 @@
+:root {
+	--background-color-a: #9b59b6;
+	--background-color-b: #8e44ad;
+	--text-color: white;
+
+	--border-radius: 20px;
+	--title-font: "Rubik Mono One", sans-serif;
+	--body-font: "Rubik", sand-serif;
+}
+
+html, body {
+	height: 100%;
+	position: relative;
+	background-color: var(--background-color-a);
+	-webkit-font-smoothing: antialiased;
+}
+
+body {
+	margin: 0;
+	padding: 10px 75px 50px 75px;
+	color: var(--text-color);
+	font-family: var(--body-font);
+	box-sizing: border-box;
+}
+
+h1 {
+	font-family: var(--title-font);
+	font-weight: 400;
+	word-spacing: -12px;
+}
+
+body > div {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+
+body > div > div {
+	display: flex;
+	gap: 30px;
+	justify-content: center;
+	height: 100%;
+}
+
+main#games-grid, aside#side-menu {
+	flex: 1;
+}
+
+main#games-grid {
+	display: flex;
+	flex-wrap: wrap;
+	align-content: flex-start;
+	flex-grow: 2;
+}
+
+main#games-grid .game {
+	flex-basis: 50%;
+    aspect-ratio: 1 / 1;
+	background-color: var(--background-color-b);
+	border-radius: var(--border-radius);
+}
+
+aside#side-menu #player-list {
+	background-color: var(--background-color-b);
+	border-radius: var(--border-radius);
+}

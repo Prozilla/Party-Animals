@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Lobby</title>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="css/style.css" type="text/css">
+
+	<!-- Fonts -->
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&family=Rubik:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+	<div>
+		<h1>Party Games</h1>
+		<div>
+			<!-- Games list -->
+			<main id="games-grid">
+				<div class="game">
+
+				</div>
+			</main>
+
+			<!-- Player list -->
+			<aside id="side-menu">
+				<div id="player-list">
+					<p>Players</p>
+					<div id="players">
+						<div class="player host">
+							<div class="character"></div>
+							<div>
+								<div class="name">
+									Micheal
+								</div>
+								<div class="score">
+									Score: 0
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div id="player-options">
+
+				</div>
+			</aside>
+		</div>
+	</div>
+
+	<!-- Initialize firebase  -->
+	<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+	<script>
+		const firebaseConfig = {
+			apiKey: "AIzaSyCiPuhw3RDlmFTTCewWbByOKNZv5g3zAsQ",
+			authDomain: "party-games-d1a03.firebaseapp.com",
+			databaseURL: "https://party-games-d1a03-default-rtdb.europe-west1.firebasedatabase.app",
+			projectId: "party-games-d1a03",
+			storageBucket: "party-games-d1a03.appspot.com",
+			messagingSenderId: "645514341359",
+			appId: "1:645514341359:web:a32d7aaa1a4a5b5051e41a"
+		};
+		firebase.initializeApp(firebaseConfig);
+	</script>
+
+	<script src="js/main.js"></script>
+</body>
+</html>
