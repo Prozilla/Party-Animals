@@ -53,15 +53,21 @@ function createName(animal) {
 	let playerRef;
 
 	// Party
+	let players = {};
 	let playerElements = {};
 	const playerList = document.querySelector("#player-list #players");
+
+	// Player options
+	const playerNameInput = document.querySelector("#player-name");
+	const playerAnimalButton = document.querySelector("#player-animal");
+	const playerColorButton = document.querySelector("#player-color");
 
 	function initParty() {
 		const playersRef = firebase.database().ref("players");
 
 		// Fires whenever the data of any player changes
 		playersRef.on("value", (snapshot) => {
-			const players = snapshot.val() || {};
+			players = snapshot.val() || {};
 			Object.keys(players).forEach((key) => {
 				const playerState = players[key];
 				const element = playerElements[key];
@@ -69,10 +75,19 @@ function createName(animal) {
 				element.querySelector(".name").innerText = playerState.name;
 				element.querySelector(".score").innerText = `Score: ${playerState.score}`;
 
+				const character = element.querySelector(".character");
+
 				// Update color
-				if (!element.classList.contains(playerState.color)) {
-					element.classList.remove(colors);
-					element.classList.add(playerState.color.toLowerCase());
+				if (!character.classList.contains(playerState.color)) {
+					// Remove previous color
+					colors.forEach(color => {
+						color = color.toLowerCase();
+						if (character.classList.contains(color))
+							character.classList.remove(color);
+					});
+
+					// Add new color
+					character.classList.add(playerState.color.toLowerCase());
 				}
 			});
 		});
@@ -100,6 +115,46 @@ function createName(animal) {
 			playerList.removeChild(playerElements[removedKey]);
 			delete playerElements[removedKey];
 		});
+
+		playerNameInput.addEventListener("change", (event) => {
+			const newName = event.target.value || createName(players[playerId].animal);
+			playerNameInput.value = newName;
+
+			playerRef.update({
+				name: newName
+			});
+		});
+
+		playerColorButton.addEventListener("click", () => {
+			const currentColorIndex = colors.indexOf(players[playerId].color);
+			const nextColor = colors[currentColorIndex + 1] || colors[0];
+
+			playerRef.update({
+				color: nextColor
+			});
+		});
+
+		playerAnimalButton.addEventListener("click", () => {
+			const currentAnimal = players[playerId].animal
+			const currentAnimalIndex = animals.indexOf(currentAnimal);
+			const nextAnimal = animals[currentAnimalIndex + 1] || animals[0];
+
+			// Update name
+			const splitName = players[playerId].name.split(" ");
+			splitName.forEach((part) => {
+				if (part.toLowerCase() == currentAnimal.toLowerCase(""))
+					splitName[splitName.indexOf(part)] = nextAnimal;
+			});
+
+			const newName = splitName.join(" ");
+
+			playerRef.update({
+				animal: nextAnimal,
+				name: newName
+			});
+
+			playerNameInput.value = newName;
+		});
 	}
 
 	firebase.auth().onAuthStateChanged((user) => {
@@ -113,6 +168,8 @@ function createName(animal) {
 			const animal = randomFromArray(animals);
 			const name = createName(animal);
 			const color = randomFromArray(colors);
+
+			playerNameInput.value = name;
 
 			playerRef.set({
 				id: playerId,

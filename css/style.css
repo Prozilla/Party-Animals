@@ -140,27 +140,33 @@ aside#side-menu #player-list #players {
 /* Player options */
 #player-options {
 	display: flex;
-	gap: 5px;
+	gap: 10px;
 	flex-wrap: wrap;
 }
 
 #player-options #player-name-input {
-	flex: 2;
+	flex: 200%;
+	display: flex;
+	gap: 10px;
 	width: 100%;
 }
 
 #player-options #player-name-input #player-name {
+	flex: 1;
 	padding: 5px 10px;
 	outline: none;
 	border: none;
 	border-radius: var(--border-radius-a);
-	/* font-family: var(--body-font); */
+	font-family: var(--body-font);
+	font-weight: 600;
 }
 
 #player-options button {
 	width: calc(50% - 5px);
+	padding: 5px 10px;
 	border: none;
 	border-radius: var(--border-radius-a);
-	font-family: var(--title-font);
+	font-family: var(--body-font);
+	font-weight: 600;
 	cursor: pointer;
 }
