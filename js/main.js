@@ -1,3 +1,15 @@
+const gameNames = ["slime"];
+const games = {};
+
+for (let i = 0; i < gameNames.length; i++) {
+	const gameName = gameNames[i];
+
+	import(`./games/${gameName}.js`).then(game => {
+		games[gameName] = game;
+		// games[gameName].start();
+	});
+}
+
 const animals = [
 	"Pig",
 	"Cat",
@@ -83,6 +95,9 @@ function convertToPossessive(name) {
 	const modal = document.querySelector("#modal");
 	let allowClickingModalAway = true;
 
+	// Games
+	const gamesGrid = document.querySelector("#games-grid");
+
 	function showModal(title, body) {
 		console.log(`Showing "${title}" modal`);
 		modal.querySelector("#modal-title").childNodes[0].textContent = title;
@@ -99,6 +114,10 @@ function convertToPossessive(name) {
 
 	function closeModal() {
 		modal.classList.remove("active");
+	}
+
+	function startGame(name) {
+		games[name].start();
 	}
 
 	function createParty() {
@@ -146,7 +165,7 @@ function convertToPossessive(name) {
 		}
 
 		// Populate party
-		partyHost = playerId;
+		const partyHost = playerId;
 
 		partyRef.update({
 			members: partyMembers,
@@ -403,6 +422,10 @@ function convertToPossessive(name) {
 				console.log(target);
 			}
 		})
+
+		gamesGrid.firstElementChild.addEventListener("click", () => {
+			games["slime"].start();
+		});
 	}
 
 	firebase.auth().onAuthStateChanged((user) => {

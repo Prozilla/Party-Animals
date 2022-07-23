@@ -27,8 +27,8 @@
 }
 
 html, body {
-	height: 100%;
 	position: relative;
+	height: 100%;
 	background-color: var(--background-color-a);
 	-webkit-font-smoothing: antialiased;
 }
@@ -106,6 +106,15 @@ aside#side-menu #player-list #players {
 	display: flex;
 	gap: 10px;
 	flex-direction: column;
+}
+
+/* Games */
+body > canvas {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
 }
 
 /* Game list */
