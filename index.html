@@ -7,6 +7,9 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="css/style.css" type="text/css">
 
+	<!-- Fontawesome -->
+	<script rel="preconnect" src="https://kit.fontawesome.com/241f6baf1e.js"></script>
+
 	<!-- Fonts -->
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,28 +21,44 @@
 		<div>
 			<!-- Games list -->
 			<main id="games-grid">
-				<div class="game">
-
+				<div class="game" data-game-title="slime">
+					<img class="game-thumbnail">
+					<h2 class="game-title">Slime</h2>
 				</div>
 			</main>
 
 			<!-- Player list -->
 			<aside id="side-menu">
 				<div id="player-list">
-					<p>Your party</p>
-					<div id="players">
-						
+					<p id="party-name">Your party</p>
+					<div id="players"></div>
+					<div id="party-options">
+						<button id="invite-players">Invite players</button>
+						<button id="join-party">Join party</button>
+						<button id="leave-party">Leave party</button>
 					</div>
 				</div>
-				<div id="player-options">
-					<span id="player-name-input">
-						<label for="player-name">Your name</label>
-						<input id="player-name" maxlength="16" type="text">
-					</span>
-					<button id="player-animal">Change animal</button>
-					<button id="player-color">Change color</button>
+				<div id="player-settings">
+					<div id="character-preview">
+						<div id="character-preview-detail"></div>
+					</div>
+					<div id="player-options">
+						<span id="player-name-input">
+							<label for="player-name">Your name</label>
+							<input id="player-name" maxlength="16" type="text">
+						</span>
+						<button id="player-animal">Change animal</button>
+						<button id="player-color">Change color</button>
+					</div>
 				</div>
 			</aside>
+		</div>
+	</div>
+
+	<div id="modal">
+		<div id="modal-inner">
+			<h2 id="modal-title">Lorem Ipsum<button id="close-modal"><i class="fa-solid fa-xmark"></i></button></h2>
+			<span id="modal-body"></span>
 		</div>
 	</div>
 
