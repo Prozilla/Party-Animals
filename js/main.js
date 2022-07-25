@@ -97,6 +97,10 @@ function convertToPossessive(name) {
 	// Games
 	const gamesGrid = document.querySelector("#games-grid");
 
+	function launchGame(name) {
+		games[name].start(players, playerId, party.host, partyCode);
+	}
+
 	function showModal(title, body) {
 		console.log(`Showing "${title}" modal`);
 		modal.querySelector("#modal-title").childNodes[0].textContent = title;
@@ -198,6 +202,12 @@ function convertToPossessive(name) {
 			if (newParty != null) {
 				party = newParty;
 				updatePartyName();
+			}
+		});
+
+		partyRef.on("child_added", (snapshot) => {
+			if (snapshot.key == "gameData" && party.host != playerId) {
+				launchGame(snapshot.val().name);
 			}
 		});
 
@@ -423,7 +433,8 @@ function convertToPossessive(name) {
 		})
 
 		gamesGrid.firstElementChild.addEventListener("click", () => {
-			games["slime"].start(players[playerId]);
+			if (party.host == playerId)
+				launchGame("slime");
 		});
 	}
 

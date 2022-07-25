@@ -15,44 +15,131 @@ const colors = {
 }
 
 // Orbs
-let orbs = [];
+const orbs = {};
 const orbSpawnDelay = 500;
 const orbRadius = 20;
 let lastOrbSpawn;
 
+let players;
+let playerRef;
 let playerData;
+const playerGameObjects = {};
+let hostId;
+let partyCode;
 let mouseX, mouseY;
 
+function clampValue(value, min, max) {
+	return value < min ? min : value > max ? max : value;
+}
+
+function randomRange(min, max) {
+	min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function randomPosition() {
+	return {
+		x: randomRange(0, worldSize),
+		y: randomRange(0, worldSize)
+	}
+}
+
+function initGame(scene) {
+	const gameDataRef = firebase.database().ref(`parties/${partyCode}/gameData`);
+
+	if (hostId == playerData.id) {
+		for (const key of Object.keys(players)) {
+			const position = randomPosition();
+			const player = players[key];
+
+			player.x = position.x;
+			player.y = position.y;
+			player.score = 30;
+		}
+
+		gameDataRef.set({
+			name: name,
+			players: players,
+		});
+
+		gameDataRef.onDisconnect().remove();
+	}
+
+	const playersRef = gameDataRef.child("players");
+	playersRef.on("value", (snapshot) => {
+		players = snapshot.val();
+		playerData = players[playerData.id];
+
+		Object.keys(players).forEach((key) => {
+			const player = players[key];
+			const gameObject = playerGameObjects[key];
+
+			if (gameObject != null) {
+				// Update position
+				gameObject.x = player.x;
+				gameObject.y = player.y;
+				gameObject.character.x = player.x;
+				gameObject.character.y = player.y;
+
+				// Update score
+				gameObject.score = player.score;
+				gameObject.radius = player.score;
+				gameObject.character.displayWidth = player.score * 4;
+				gameObject.character.displayHeight = player.score * 4;
+
+				// Update nametag position
+				gameObject.nametag.x = player.x;
+				gameObject.nametag.y = player.y - player.score - 20;
+			}
+		});
+	});
+
+	playerRef = playersRef.child(playerData.id);
+
+	const orbsRef = gameDataRef.child("orbs");
+
+	orbsRef.on("child_added", (snapshot) => {
+		const orb = snapshot.val();
+		const key = snapshot.key;
+
+		orbs[key] = scene.add.circle(orb.x, orb.y, orbRadius, `0x${orb.color}`);
+		scene.orbsGroup.add(orbs[key]);
+	});
+
+	orbsRef.on("child_removed", (snapshot) => {
+		const key = snapshot.key;
+		orbs[key].destroy();
+		delete orbs[key];
+	});
+}
+
 function spawnOrb(scene) {
-	const x = Math.random() * worldSize;
-	const y = Math.random() * worldSize;
+	const position = randomPosition();
 
 	const colorNames = Object.keys(colors);
   	const color = colors[colorNames[Math.floor(colorNames.length * Math.random())]][0];
 
-	const orb = scene.add.circle(x, y, orbRadius, `0x${color}`);
-	scene.orbsGroup.add(orb);
-	orbs.push(orb);
+	const orbsRef = firebase.database().ref(`parties/${partyCode}/gameData/orbs/${position.x},${position.y}`);
+
+	orbsRef.set({
+		x: position.x,
+		y: position.y,
+		color: color
+	});
 }
 
-function collectOrb(orb, scene) {
-	if (orbs.includes(orb)) {
-		// Delete orb
-		orb.destroy();
-		orbs = orbs.filter((obj) => { return obj != orb; });
+function collectOrb(orb) {
+	firebase.database().ref(`parties/${partyCode}/gameData/orbs/${orb.x},${orb.y}`).remove();
 
-		// Add score
-		addScore(scene, 2);
-	}
+	// Add score
+	addScore(2);
 }
 
-function addScore(scene, amount) {
-	scene.score += amount;
-
-	// grow player
-	scene.player.radius = scene.score;
-	scene.player.character.displayWidth = scene.score * 4;
-	scene.player.character.displayHeight = scene.score * 4;
+function addScore(amount) {
+	playerRef.update({
+		score: playerData.score + amount
+	});
 }
 
 function mouseMove(event) {
@@ -97,118 +184,150 @@ function changePixelColor(data, index, color)
 const Slime = new Phaser.Class({Extends: Phaser.Scene,
 	preload: function() {
 		this.load.addFile(new WebFontFile(this.load, "Fredoka"));
-		this.load.svg("character", `media/characters/${playerData.animal.toLowerCase()}.svg`);
+
+		Object.keys(players).forEach((key) => {
+			const player = players[key];
+			this.load.svg(player.id, `media/characters/${player.animal.toLowerCase()}.svg`);
+		});
 	},
 
     create: function() {
+		initGame(this);
+
 		this.orbsGroup = this.add.group();
 
-		// Add player
-		this.score = 30;
-		const playerColor = colors[playerData.color][0];
+		Object.keys(players).forEach((key) => {
+			const player = players[key];
 
-		const playerX = screen.width / 2;
-		const playerY = screen.height / 2;
+			// Add player
+			const playerColor = colors[player.color][0];
 
-		this.player = this.add.circle(playerX, playerY, this.score, `0x${playerColor}`);
-		this.player.setDepth(100);
+			const gameObject = this.add.circle(player.x, player.y, player.score, `0x${playerColor}`);
+			gameObject.setDepth(100);
 
-		// Add player character (https://phaser.io/examples/v3/view/textures/edit-texture-silhouette)
-		const originalTexture = this.textures.get("character").getSourceImage();
-		const newTexture = this.textures.createCanvas("characterNew", originalTexture.width, originalTexture.height);
+			playerGameObjects[player.id] = gameObject;
 
-		const context = newTexture.getSourceImage().getContext("2d");
-		context.drawImage(originalTexture, 0, 0);
-		changeImageColor(context, originalTexture, colors[playerData.color][1]);
+			// Add player character (https://phaser.io/examples/v3/view/textures/edit-texture-silhouette)
+			const originalTexture = this.textures.get(player.id).getSourceImage();
+			const newTexture = this.textures.createCanvas(player.id + "_new", originalTexture.width, originalTexture.height); // Using player id because texture keys must be unique
 
-		this.player.character = this.add.image(playerX, playerY, "characterNew");
-		this.player.character.setDepth(101);
-		this.player.character.setOrigin(0.5, 0.5);
+			const context = newTexture.getSourceImage().getContext("2d");
+			context.drawImage(originalTexture, 0, 0);
+			changeImageColor(context, originalTexture, colors[player.color][1]);
 
-		this.player.character.image = originalTexture;
-		this.player.character.context = context;
+			gameObject.character = this.add.image(player.x, player.y, player.id + "_new");
+			gameObject.character.setDepth(101);
+			gameObject.character.setOrigin(0.5, 0.5);
 
-		this.player.character.displayWidth = this.score * 4;
-		this.player.character.displayHeight = this.score * 4;
+			gameObject.character.image = originalTexture;
+			gameObject.character.context = context;
 
-		// Add player name
-		const playerName = playerData.name;
-		this.player.nametag = this.add.text(playerX, playerY, playerName, {
-			fontFamily: '"Fredoka"',
-			fontSize: "32px",
-			fill: "#000"
+			gameObject.character.displayWidth = player.score * 4;
+			gameObject.character.displayHeight = player.score * 4;
+
+			// Add player name
+			gameObject.nametag = this.add.text(player.x, player.y, player.name, {
+				fontFamily: '"Fredoka"',
+				fontSize: "32px",
+				fill: "#000"
+			});
+
+			gameObject.nametag.setOrigin(0.5, 1);
+			gameObject.nametag.setDepth(102);
 		});
-		this.player.nametag.setOrigin(0.5, 1);
-		this.player.nametag.setDepth(102);
 
 		// Set up camera
-		this.cameras.main.setBounds(0, 0, worldSize, worldSize);
-		this.cameras.main.startFollow(this.player);
+		this.cameras.main.startFollow(playerGameObjects[playerData.id]);
+
+		// Draw border
+		const graphics = this.add.graphics();
+
+		const color = Phaser.Display.Color.GetColor(40, 40, 40);
+		const thickness = 30;
+
+		graphics.lineStyle(thickness, color, 1);
+    	graphics.strokeRect(-thickness / 2, -thickness / 2, worldSize + thickness, worldSize + thickness);
     },
 
 	update: function(time, delta) {
 		// Handle orb spawning
-		if (lastOrbSpawn == null) {
-			lastOrbSpawn = time;
-		}
+		if (hostId == playerData.id) {
+			if (lastOrbSpawn == null) {
+				lastOrbSpawn = time;
+			}
 
-		if (time - lastOrbSpawn > orbSpawnDelay) {
-			lastOrbSpawn = time;
-			spawnOrb(this);
+			if (time - lastOrbSpawn > orbSpawnDelay) {
+				lastOrbSpawn = time;
+				spawnOrb(this);
+			}
 		}
 
 		// Move player based on mouse position
 		if (mouseX != null && mouseY != null) {
-			const mouseOffsetX = parseInt(mouseX + this.cameras.main.scrollX) - parseInt(this.player.x);
-			const mouseOffsetY = parseInt(mouseY + this.cameras.main.scrollY) - parseInt(this.player.y);
+			const mouseOffsetX = parseInt(mouseX + this.cameras.main.scrollX) - parseInt(playerData.x);
+			const mouseOffsetY = parseInt(mouseY + this.cameras.main.scrollY) - parseInt(playerData.y);
 
-			const speed = Math.sqrt(this.score) / 1000;
+			const speed = Math.sqrt(playerData.score) / 1000;
 
 			// Move player
-			this.player.x += mouseOffsetX * speed;
-			this.player.y += mouseOffsetY * speed;
+			let x = playerData.x + mouseOffsetX * speed;
+			let y = playerData.y + mouseOffsetY * speed;
 
-			this.player.character.x = this.player.x;
-			this.player.character.y = this.player.y;
+			// Clamp position
+			x = clampValue(x, 0 + playerData.score / 2, worldSize - playerData.score / 2);
+			y = clampValue(y, 0 + playerData.score / 2, worldSize - playerData.score / 2);
+
+			playerRef.update({
+				x: x,
+				y: y,
+			});
 		}
 
 		// Collect orbs
-		for (let i = 0; i < orbs.length; i++) {
-			const orb = orbs[i];
+		Object.keys(orbs).forEach((key) => {
+			const orb = orbs[key];
 
-			const horizontalDistance = this.player.x - orb.x;
-			const verticalDistance = this.player.y - orb.y;
+			const horizontalDistance = playerData.x - orb.x;
+			const verticalDistance = playerData.y - orb.y;
 
 			const distance = Math.sqrt(horizontalDistance * horizontalDistance + verticalDistance * verticalDistance);
 
-			if (distance < this.score * 1.5) {
-				if (distance < this.score - orbRadius) {
-					collectOrb(orb, this);
+			if (distance < playerData.score * 1.5) {
+				if (distance < playerData.score - orbRadius) {
+					collectOrb(orb);
 				} else {
 					// Pull orb towards player
 					const pullForce = Math.pow(1 - distance / 10000, 3);
 					const speed = pullForce < 0 ? 0 : pullForce;
 
-					const offsetX = this.player.x - orb.x;
-					const offsetY = this.player.y - orb.y;
+					const offsetX = playerData.x - orb.x;
+					const offsetY = playerData.y - orb.y;
 
-					orb.x += offsetX / 1000 * speed;
-					orb.y += offsetY / 1000 * speed;
+					const x = orb.x + offsetX / 1000 * speed;
+					const y = orb.y + offsetY / 1000 * speed;
+
+					const orbsRef = firebase.database().ref(`parties/${partyCode}/gameData/orbs/${orb.x},${orb.y}`);
+
+					orbsRef.update({
+						x: x,
+						y: y
+					});
 				}
 			}
-		}
-
-		// Update player nametag position
-		this.player.nametag.x = this.player.x;
-		this.player.nametag.y = this.player.y - this.score - 20;
+		});
 	},
 
 });
 
-export function start(player) {
+export function start(currentPlayers, playerId, currentHostId, currentPartyCode) {
 	console.log("Starting slime");
-	playerData = player;
-	console.log(playerData);
+
+	players = currentPlayers;
+	playerData = players[playerId];
+	hostId = currentHostId;
+	partyCode = currentPartyCode;
+
+	console.log(players);
 
 	const config = {
 		type: Phaser.CANVAS,
