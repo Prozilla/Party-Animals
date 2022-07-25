@@ -20,6 +20,7 @@ const orbSpawnDelay = 500;
 const orbRadius = 20;
 let lastOrbSpawn;
 
+let members;
 let players;
 let playerRef;
 let playerData;
@@ -45,8 +46,26 @@ function randomPosition() {
 	}
 }
 
+function calculateDistance(position1, position2) {
+	const horizontalDistance = position1.x - position2.x;
+	const verticalDistance = position1.y - position2.y;
+
+	return Math.sqrt(horizontalDistance * horizontalDistance + verticalDistance * verticalDistance);
+}
+
+function endGame(scene, winner) {
+	const winnerRef = firebase.database().ref(`parties/${partyCode}/members/${winner.id}`);
+	winnerRef.update({
+		score: members[winner.id].score + 1
+	});
+
+	scene.sys.game.destroy(true);
+}
+
 function initGame(scene) {
 	const gameDataRef = firebase.database().ref(`parties/${partyCode}/gameData`);
+	const orbsRef = gameDataRef.child("orbs");
+	const playersRef = gameDataRef.child("players");
 
 	if (hostId == playerData.id) {
 		for (const key of Object.keys(players)) {
@@ -56,6 +75,7 @@ function initGame(scene) {
 			player.x = position.x;
 			player.y = position.y;
 			player.score = 30;
+			player.isDead = false;
 		}
 
 		gameDataRef.set({
@@ -66,10 +86,13 @@ function initGame(scene) {
 		gameDataRef.onDisconnect().remove();
 	}
 
-	const playersRef = gameDataRef.child("players");
 	playersRef.on("value", (snapshot) => {
 		players = snapshot.val();
 		playerData = players[playerData.id];
+
+		let totalPlayers = 0;
+		let alivePlayers = 0;
+		let lastAlivePlayer;
 
 		Object.keys(players).forEach((key) => {
 			const player = players[key];
@@ -84,20 +107,45 @@ function initGame(scene) {
 
 				// Update score
 				gameObject.score = player.score;
+				console.log(player.score);
 				gameObject.radius = player.score;
 				gameObject.character.displayWidth = player.score * 4;
 				gameObject.character.displayHeight = player.score * 4;
 
+				// Set depth based on score
+				gameObject.setDepth(player.score + 100);
+				gameObject.character.setDepth(player.score + 101);
+				gameObject.nametag.setDepth(player.score + 102);
+
 				// Update nametag position
 				gameObject.nametag.x = player.x;
 				gameObject.nametag.y = player.y - player.score - 20;
+
+				totalPlayers++;
+
+				// Hide dead players
+				if (player.isDead) {
+					gameObject.visible = false;
+					gameObject.character.visible = false;
+					gameObject.nametag.visible = false;
+				} else {
+					alivePlayers++;
+					lastAlivePlayer = player;
+				}
 			}
 		});
+
+		if (alivePlayers < 2 && totalPlayers > 0) {
+			// Remove event listeners
+			playersRef.off("value");
+			orbsRef.off("child_added");
+			orbsRef.off("child_removed");
+
+			endGame(scene, lastAlivePlayer);
+		}
 	});
 
 	playerRef = playersRef.child(playerData.id);
-
-	const orbsRef = gameDataRef.child("orbs");
 
 	orbsRef.on("child_added", (snapshot) => {
 		const orb = snapshot.val();
@@ -114,7 +162,7 @@ function initGame(scene) {
 	});
 }
 
-function spawnOrb(scene) {
+function spawnOrb() {
 	const position = randomPosition();
 
 	const colorNames = Object.keys(colors);
@@ -131,8 +179,6 @@ function spawnOrb(scene) {
 
 function collectOrb(orb) {
 	firebase.database().ref(`parties/${partyCode}/gameData/orbs/${orb.x},${orb.y}`).remove();
-
-	// Add score
 	addScore(2);
 }
 
@@ -258,7 +304,7 @@ const Slime = new Phaser.Class({Extends: Phaser.Scene,
 
 			if (time - lastOrbSpawn > orbSpawnDelay) {
 				lastOrbSpawn = time;
-				spawnOrb(this);
+				spawnOrb();
 			}
 		}
 
@@ -286,11 +332,7 @@ const Slime = new Phaser.Class({Extends: Phaser.Scene,
 		// Collect orbs
 		Object.keys(orbs).forEach((key) => {
 			const orb = orbs[key];
-
-			const horizontalDistance = playerData.x - orb.x;
-			const verticalDistance = playerData.y - orb.y;
-
-			const distance = Math.sqrt(horizontalDistance * horizontalDistance + verticalDistance * verticalDistance);
+			const distance = calculateDistance(playerData, orb);
 
 			if (distance < playerData.score * 1.5) {
 				if (distance < playerData.score - orbRadius) {
@@ -315,6 +357,25 @@ const Slime = new Phaser.Class({Extends: Phaser.Scene,
 				}
 			}
 		});
+
+		// Kill players
+		Object.keys(players).forEach((key) => {
+			if (key != playerData.id) {
+				const player = players[key];
+
+				if (playerData.score > player.score) {
+					const distance = calculateDistance(playerData, player);
+
+					// Check if players intersect
+					if (distance < playerData.score - player.score) {
+						const playerRef = firebase.database().ref(`parties/${partyCode}/gameData/players/${player.id}`);
+						playerRef.update({
+							isDead: true
+						});
+					}
+				}
+			}
+		});
 	},
 
 });
@@ -322,12 +383,12 @@ const Slime = new Phaser.Class({Extends: Phaser.Scene,
 export function start(currentPlayers, playerId, currentHostId, currentPartyCode) {
 	console.log("Starting slime");
 
-	players = currentPlayers;
+	members = currentPlayers;
+	players = members;
+
 	playerData = players[playerId];
 	hostId = currentHostId;
 	partyCode = currentPartyCode;
-
-	console.log(players);
 
 	const config = {
 		type: Phaser.CANVAS,
