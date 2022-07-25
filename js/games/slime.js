@@ -73,17 +73,21 @@ function generateId(size) {
    return result;
 }
 
-function endGame(scene, winner, playersRef, orbsRef) {
+function endGame(scene, winner, gameDataRef, playersRef, orbsRef) {
 	if (allowEndGame) {
 		// Remove event listeners
 		playersRef.off("value");
 		orbsRef.off("child_added");
 		orbsRef.off("child_removed");
 
+		// Give a point to the winner
 		const winnerRef = firebase.database().ref(`parties/${partyCode}/members/${winner.id}`);
 		winnerRef.update({
 			score: members[winner.id].score + 1
 		});
+
+		// Delete game data
+		gameDataRef.remove();
 
 		scene.sys.game.destroy(true);
 	}
@@ -162,7 +166,7 @@ function initGame(scene) {
 		});
 
 		if (alivePlayers < 2 && totalPlayers > 0) {
-			endGame(scene, lastAlivePlayer, playersRef, orbsRef);
+			endGame(scene, lastAlivePlayer, gameDataRef, playersRef, orbsRef);
 		}
 	});
 
@@ -176,11 +180,13 @@ function initGame(scene) {
 				const updatedOrb = updatedOrbs[key];
 				const orb = orbs[key];
 
-				orb.x = updatedOrb.x;
-				orb.y = updatedOrb.y;
+				if (orb != null) {
+					orb.x = updatedOrb.x;
+					orb.y = updatedOrb.y;
 
-				orb.gameObject.x = orb.x;
-				orb.gameObject.y = orb.y;
+					orb.gameObject.x = orb.x;
+					orb.gameObject.y = orb.y;
+				}
 			});
 	});
 
@@ -427,10 +433,12 @@ const Slime = new Phaser.Class({Extends: Phaser.Scene,
 export function start(currentPlayers, playerId, currentHostId, currentPartyCode) {
 	console.log("Starting slime");
 
-	members = currentPlayers;
-	players = members;
+	members = JSON.parse(JSON.stringify(currentPlayers));
+	players = currentPlayers;
 	playerGameObjects = {};
 	orbs = {};
+
+	console.log(members);
 
 	playerData = players[playerId];
 	hostId = currentHostId;
