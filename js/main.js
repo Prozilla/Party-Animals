@@ -6,7 +6,6 @@ for (let i = 0; i < gameNames.length; i++) {
 
 	import(`./games/${gameName}.js`).then(game => {
 		games[gameName] = game;
-		// games[gameName].start();
 	});
 }
 
@@ -424,7 +423,7 @@ function convertToPossessive(name) {
 		})
 
 		gamesGrid.firstElementChild.addEventListener("click", () => {
-			games["slime"].start();
+			games["slime"].start(players[playerId]);
 		});
 	}
 
