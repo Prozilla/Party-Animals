@@ -107,7 +107,6 @@ function initGame(scene) {
 
 				// Update score
 				gameObject.score = player.score;
-				console.log(player.score);
 				gameObject.radius = player.score;
 				gameObject.character.displayWidth = player.score * 4;
 				gameObject.character.displayHeight = player.score * 4;
