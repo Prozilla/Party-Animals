@@ -9,6 +9,8 @@ for (let i = 0; i < gameNames.length; i++) {
 	});
 }
 
+const minPlayers = 2;
+
 const animals = [
 	"Pig",
 	"Cat",
@@ -434,8 +436,7 @@ function convertToPossessive(name) {
 
 		gamesGrid.firstElementChild.addEventListener("click", () => {
 			if (party.host == playerId) {
-				console.log(Object.keys(players).length);
-				if (Object.keys(players).length > 1) {
+				if (Object.keys(players).length >= minPlayers) {
 					launchGame("slime");
 				} else {
 					showModal("You need more players", "<p>You can't launch a game by yourself. Invite more players to start playing.</p>");

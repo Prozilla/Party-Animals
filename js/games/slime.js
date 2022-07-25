@@ -14,19 +14,27 @@ const colors = {
 	"Pink": ["e78ae7", "b65fb6"],
 }
 
+// Debug
+let allowEndGame = true;
+
 // Orbs
-const orbs = {};
+let orbs;
 const orbSpawnDelay = 500;
 const orbRadius = 20;
+const maxOrbs = 50;
 let lastOrbSpawn;
 
-let members;
+// Players
 let players;
 let playerRef;
 let playerData;
-const playerGameObjects = {};
+let playerGameObjects;
+
+// Party
+let members;
 let hostId;
 let partyCode;
+
 let mouseX, mouseY;
 
 function clampValue(value, min, max) {
@@ -53,13 +61,32 @@ function calculateDistance(position1, position2) {
 	return Math.sqrt(horizontalDistance * horizontalDistance + verticalDistance * verticalDistance);
 }
 
-function endGame(scene, winner) {
-	const winnerRef = firebase.database().ref(`parties/${partyCode}/members/${winner.id}`);
-	winnerRef.update({
-		score: members[winner.id].score + 1
-	});
+function generateId(size) {
+    var result = "";
+    var characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    var charactersCount = characters.length;
 
-	scene.sys.game.destroy(true);
+	for ( var i = 0; i < size; i++ ) {
+		result += characters.charAt(Math.floor(Math.random() * charactersCount));
+	}
+
+   return result;
+}
+
+function endGame(scene, winner, playersRef, orbsRef) {
+	if (allowEndGame) {
+		// Remove event listeners
+		playersRef.off("value");
+		orbsRef.off("child_added");
+		orbsRef.off("child_removed");
+
+		const winnerRef = firebase.database().ref(`parties/${partyCode}/members/${winner.id}`);
+		winnerRef.update({
+			score: members[winner.id].score + 1
+		});
+
+		scene.sys.game.destroy(true);
+	}
 }
 
 function initGame(scene) {
@@ -135,28 +162,40 @@ function initGame(scene) {
 		});
 
 		if (alivePlayers < 2 && totalPlayers > 0) {
-			// Remove event listeners
-			playersRef.off("value");
-			orbsRef.off("child_added");
-			orbsRef.off("child_removed");
-
-			endGame(scene, lastAlivePlayer);
+			endGame(scene, lastAlivePlayer, playersRef, orbsRef);
 		}
 	});
 
 	playerRef = playersRef.child(playerData.id);
 
+	orbsRef.on("value", (snapshot) => {
+		const updatedOrbs = snapshot.val();
+
+		if (updatedOrbs != null)
+			Object.keys(updatedOrbs).forEach((key) => {
+				const updatedOrb = updatedOrbs[key];
+				const orb = orbs[key];
+
+				orb.x = updatedOrb.x;
+				orb.y = updatedOrb.y;
+
+				orb.gameObject.x = orb.x;
+				orb.gameObject.y = orb.y;
+			});
+	});
+
 	orbsRef.on("child_added", (snapshot) => {
 		const orb = snapshot.val();
 		const key = snapshot.key;
 
-		orbs[key] = scene.add.circle(orb.x, orb.y, orbRadius, `0x${orb.color}`);
-		scene.orbsGroup.add(orbs[key]);
+		orbs[key] = orb;
+		orbs[key].gameObject = scene.add.circle(orb.x, orb.y, orbRadius, `0x${orb.color}`);
+		scene.orbsGroup.add(orbs[key].gameObject);
 	});
 
 	orbsRef.on("child_removed", (snapshot) => {
 		const key = snapshot.key;
-		orbs[key].destroy();
+		orbs[key].gameObject.destroy();
 		delete orbs[key];
 	});
 }
@@ -166,10 +205,12 @@ function spawnOrb() {
 
 	const colorNames = Object.keys(colors);
   	const color = colors[colorNames[Math.floor(colorNames.length * Math.random())]][0];
+	const id = generateId(10);
 
-	const orbsRef = firebase.database().ref(`parties/${partyCode}/gameData/orbs/${position.x},${position.y}`);
+	const orbsRef = firebase.database().ref(`parties/${partyCode}/gameData/orbs/${id}`);
 
 	orbsRef.set({
+		id: id,
 		x: position.x,
 		y: position.y,
 		color: color
@@ -177,7 +218,7 @@ function spawnOrb() {
 }
 
 function collectOrb(orb) {
-	firebase.database().ref(`parties/${partyCode}/gameData/orbs/${orb.x},${orb.y}`).remove();
+	firebase.database().ref(`parties/${partyCode}/gameData/orbs/${orb.id}`).remove();
 	addScore(2);
 }
 
@@ -303,7 +344,9 @@ const Slime = new Phaser.Class({Extends: Phaser.Scene,
 
 			if (time - lastOrbSpawn > orbSpawnDelay) {
 				lastOrbSpawn = time;
-				spawnOrb();
+
+				if (Object.keys(orbs).length < maxOrbs)
+					spawnOrb();
 			}
 		}
 
@@ -330,29 +373,31 @@ const Slime = new Phaser.Class({Extends: Phaser.Scene,
 
 		// Collect orbs
 		Object.keys(orbs).forEach((key) => {
-			const orb = orbs[key];
-			const distance = calculateDistance(playerData, orb);
+			if (key != null) {
+				const orb = orbs[key];
+				const distance = calculateDistance(playerData, orb);
 
-			if (distance < playerData.score * 1.5) {
-				if (distance < playerData.score - orbRadius) {
-					collectOrb(orb);
-				} else {
-					// Pull orb towards player
-					const pullForce = Math.pow(1 - distance / 10000, 3);
-					const speed = pullForce < 0 ? 0 : pullForce;
+				if (distance < playerData.score * 1.5) {
+					if (distance < playerData.score - orbRadius) {
+						collectOrb(orb);
+					} else {
+						// Pull orb towards player
+						const pullForce = Math.pow(1 - distance / 10000, 3);
+						const speed = pullForce < 0 ? 0 : pullForce;
 
-					const offsetX = playerData.x - orb.x;
-					const offsetY = playerData.y - orb.y;
+						const offsetX = playerData.x - orb.x;
+						const offsetY = playerData.y - orb.y;
 
-					const x = orb.x + offsetX / 1000 * speed;
-					const y = orb.y + offsetY / 1000 * speed;
+						const x = orb.x + offsetX / 1000 * speed;
+						const y = orb.y + offsetY / 1000 * speed;
 
-					const orbsRef = firebase.database().ref(`parties/${partyCode}/gameData/orbs/${orb.x},${orb.y}`);
+						const orbsRef = firebase.database().ref(`parties/${partyCode}/gameData/orbs/${orb.id}`);
 
-					orbsRef.update({
-						x: x,
-						y: y
-					});
+						orbsRef.update({
+							x: x,
+							y: y,
+						});
+					}
 				}
 			}
 		});
@@ -384,6 +429,8 @@ export function start(currentPlayers, playerId, currentHostId, currentPartyCode)
 
 	members = currentPlayers;
 	players = members;
+	playerGameObjects = {};
+	orbs = {};
 
 	playerData = players[playerId];
 	hostId = currentHostId;
@@ -414,9 +461,4 @@ export function start(currentPlayers, playerId, currentHostId, currentPartyCode)
 
 	window.addEventListener("mousemove", mouseMove);
 	window.addEventListener("touchmove", mouseMove);
-
-	// window.addEventListener("resize", () => {
-	// 	game.width = screen.width;
-	// 	game.height = screen.height;
-	// });
 }
