@@ -15,7 +15,7 @@ const colors = {
 }
 
 // Debug
-let allowEndGame = false;
+let allowEndGame = true;
 
 // Orbs
 let orbs;
