@@ -15,7 +15,7 @@ const colors = {
 }
 
 // Debug
-let allowEndGame = true;
+let allowEndGame = false;
 
 // Orbs
 let orbs;
@@ -30,12 +30,19 @@ let playerRef;
 let playerData;
 let playerGameObjects;
 
+const startingScore = 30;
+const scoreIncrease = 1;
+const startingSpeed = 1.5;
+const speedIncrease = 0.004;
+
 // Party
 let members;
 let hostId;
 let partyCode;
 
+// Input
 let mouseX, mouseY;
+const screenMargin = 50;
 
 function clampValue(value, min, max) {
 	return value < min ? min : value > max ? max : value;
@@ -59,6 +66,15 @@ function calculateDistance(position1, position2) {
 	const verticalDistance = position1.y - position2.y;
 
 	return Math.sqrt(horizontalDistance * horizontalDistance + verticalDistance * verticalDistance);
+}
+
+function moveTowards(x, y, targetX, targetY, factor) {
+	const vector = {x: targetX - x, y: targetY - y};
+
+	const magnitude = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
+	const direction = {x: vector.x / magnitude, y: vector.y / magnitude};
+
+	return {x: x + direction.x * factor, y: y + direction.y * factor};
 }
 
 function generateId(size) {
@@ -105,7 +121,7 @@ function initGame(scene) {
 
 			player.x = position.x;
 			player.y = position.y;
-			player.score = 30;
+			player.score = startingScore;
 			player.isDead = false;
 		}
 
@@ -225,7 +241,7 @@ function spawnOrb() {
 
 function collectOrb(orb) {
 	firebase.database().ref(`parties/${partyCode}/gameData/orbs/${orb.id}`).remove();
-	addScore(2);
+	addScore(scoreIncrease);
 }
 
 function addScore(amount) {
@@ -358,14 +374,19 @@ const Slime = new Phaser.Class({Extends: Phaser.Scene,
 
 		// Move player based on mouse position
 		if (mouseX != null && mouseY != null) {
-			const mouseOffsetX = parseInt(mouseX + this.cameras.main.scrollX) - parseInt(playerData.x);
-			const mouseOffsetY = parseInt(mouseY + this.cameras.main.scrollY) - parseInt(playerData.y);
+			const worldMouseX = parseInt(mouseX + this.cameras.main.scrollX);
+			const worldMouseY = parseInt(mouseY + this.cameras.main.scrollY);
 
-			const speed = Math.sqrt(playerData.score) / 1000;
+			const distance = calculateDistance(playerData, {x: worldMouseX, y: worldMouseY});
+			let factor = clampValue(screen.width > screen.height ? distance / (screen.height / 4) : distance / (screen.width / 4), 0, 1);
+
+			const speed = (playerData.score - startingScore) * speedIncrease + startingSpeed;
+
+			const newPosition = moveTowards(playerData.x, playerData.y, worldMouseX, worldMouseY, factor * speed);
 
 			// Move player
-			let x = playerData.x + mouseOffsetX * speed;
-			let y = playerData.y + mouseOffsetY * speed;
+			let x = newPosition.x;
+			let y = newPosition.y;
 
 			// Clamp position
 			x = clampValue(x, 0 + playerData.score / 2, worldSize - playerData.score / 2);

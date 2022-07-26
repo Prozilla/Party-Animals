@@ -46,6 +46,20 @@ h1 {
 	font-weight: 400;
 }
 
+button {
+	color: var(--text-color-b);
+}
+
+button, .game {
+	-webkit-tap-highlight-color: transparent;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
 ::selection {
 	color: var(--text-color-b);
 	background-color: var(--yellow-a);
