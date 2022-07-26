@@ -199,6 +199,12 @@ body > canvas {
 .player .character.sheep .character-detail, #character-preview.sheep #character-preview-detail {
 	--mask-image: url("../media/characters/sheep.svg");
 }
+.player .character.dog .character-detail, #character-preview.dog #character-preview-detail {
+	--mask-image: url("../media/characters/dog.svg");
+}
+.player .character.spider .character-detail, #character-preview.spider #character-preview-detail {
+	--mask-image: url("../media/characters/spider.svg");
+}
 
 /* Character body colors*/
 .player .character.red, #character-preview.red {

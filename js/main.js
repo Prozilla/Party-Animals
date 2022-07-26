@@ -14,8 +14,9 @@ const minPlayers = 2;
 const animals = [
 	"Pig",
 	"Cat",
-	// "Dog",
+	"Dog",
 	"Bear",
+	"Spider",
 	// "Fish",
 	// "Lion",
 	// "Wolf",
@@ -99,6 +100,53 @@ function convertToPossessive(name) {
 	// Games
 	const gamesGrid = document.querySelector("#games-grid");
 
+	function storePlayerData() {
+		const player = players[playerId];
+
+		const playerData = {
+			name: player.name,
+			animal: player.animal,
+			color: player.color,
+		}
+
+		localStorage.setItem("playerData", JSON.stringify(playerData));
+	}
+
+	function loadPlayerData() {
+		const playerData = JSON.parse(localStorage.getItem("playerData"));
+
+		if (playerData != null) {
+			setPlayerColor(playerData.color);
+			setPlayerAnimal(playerData.animal);
+			setPlayerName(playerData.name);
+		} else {
+			storePlayerData();
+		}
+	}
+
+	function setPlayerName(name) {
+		playerNameInput.value = name;
+
+		playerRef.update({name});
+
+		if (party.host == playerId)
+			partyName.innerText = convertToPossessive(players[playerId].name) + " party";
+
+		storePlayerData();
+	}
+
+	function setPlayerColor(color) {
+		playerRef.update({color});
+
+		storePlayerData();
+	}
+
+	function setPlayerAnimal(animal) {
+		playerRef.update({animal});
+
+		storePlayerData();
+	}
+
 	function launchGame(name) {
 		games[name].start(players, playerId, party.host, partyCode);
 	}
@@ -119,10 +167,6 @@ function convertToPossessive(name) {
 
 	function closeModal() {
 		modal.classList.remove("active");
-	}
-
-	function startGame(name) {
-		games[name].start();
 	}
 
 	function createParty() {
@@ -180,6 +224,7 @@ function convertToPossessive(name) {
 		playerRef = firebase.database().ref(`parties/${partyCode}/members/${playerId}`);
 		playerRef.onDisconnect().remove();
 
+		loadPlayerData();
 		initInterface();
 	}
 
@@ -296,26 +341,22 @@ function convertToPossessive(name) {
 	function initInterface(params) {
 		playerNameInput.addEventListener("change", (event) => {
 			const newName = event.target.value || createName(players[playerId].animal);
-			playerNameInput.value = newName;
-
-			playerRef.update({
-				name: newName
-			});
+			setPlayerName(newName);
 		});
 
 		playerColorButton.addEventListener("click", () => {
 			const currentColorIndex = colors.indexOf(players[playerId].color);
 			const nextColor = colors[currentColorIndex + 1] || colors[0];
 
-			playerRef.update({
-				color: nextColor
-			});
+			setPlayerColor(nextColor);
 		});
 
 		playerAnimalButton.addEventListener("click", () => {
 			const currentAnimal = players[playerId].animal
 			const currentAnimalIndex = animals.indexOf(currentAnimal);
 			const nextAnimal = animals[currentAnimalIndex + 1] || animals[0];
+
+			console.log(nextAnimal);
 
 			// Update name
 			const splitName = players[playerId].name.split(" ");
@@ -326,15 +367,8 @@ function convertToPossessive(name) {
 
 			const newName = splitName.join(" ");
 
-			playerRef.update({
-				animal: nextAnimal,
-				name: newName
-			});
-
-			playerNameInput.value = newName;
-
-			if (party.host == playerId)
-				partyName.innerText = convertToPossessive(players[playerId].name) + " party";
+			setPlayerAnimal(nextAnimal);
+			setPlayerName(newName);
 		});
 
 		joinPartyButton.addEventListener("click", () => {
