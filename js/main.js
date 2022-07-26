@@ -97,8 +97,28 @@ function convertToPossessive(name) {
 	const modal = document.querySelector("#modal");
 	let allowClickingModalAway = true;
 
+	// Chat
+	const chatInput = document.querySelector("#chat-input");
+	const chatSendButton = document.querySelector("#chat-send");
+	const chatMessagesList = document.querySelector("#chat-messages");
+	let chatMessageElements = {};
+	let chatMessagesRef;
+
 	// Games
 	const gamesGrid = document.querySelector("#games-grid");
+
+	function sendChatMessage(text) {
+		chatInput.value = "";
+
+		const time = Date.now();
+
+		const chatMessageRef = chatMessagesRef.child(time);
+
+		chatMessageRef.set({
+			senderId: playerId,
+			text: text
+		});
+	}
 
 	function storePlayerData() {
 		const player = players[playerId];
@@ -188,6 +208,7 @@ function convertToPossessive(name) {
 		});
 
 		partyMembersRef = firebase.database().ref(`parties/${partyCode}/members`);
+		chatMessagesRef = firebase.database().ref(`parties/${partyCode}/chat`);
 		initParty();
 	
 		partyRef.onDisconnect().remove();
@@ -336,9 +357,27 @@ function convertToPossessive(name) {
 			playerList.removeChild(playerElements[removedKey]);
 			delete playerElements[removedKey];
 		});
+
+		chatMessagesRef.on("child_added", (snapshot) => {
+			const newMessage = snapshot.val();
+			const key = snapshot.key;
+			const sender = players[newMessage.senderId];
+
+			const newMessageElement = document.createElement("span");
+			newMessageElement.classList.add("chat-message", sender.color.toLowerCase());
+
+			newMessageElement.innerHTML = `
+				<p class="name">${sender.name}:</p>
+				<p class="text">${newMessage.text}</p>`;
+
+			chatMessageElements[key] = newMessageElement;
+			chatMessagesList.appendChild(newMessageElement);
+
+			chatMessagesList.scrollTop = chatMessagesList.scrollHeight;
+		});
 	}
 
-	function initInterface(params) {
+	function initInterface() {
 		playerNameInput.addEventListener("change", (event) => {
 			const newName = event.target.value || createName(players[playerId].animal);
 			setPlayerName(newName);
@@ -355,8 +394,6 @@ function convertToPossessive(name) {
 			const currentAnimal = players[playerId].animal
 			const currentAnimalIndex = animals.indexOf(currentAnimal);
 			const nextAnimal = animals[currentAnimalIndex + 1] || animals[0];
-
-			console.log(nextAnimal);
 
 			// Update name
 			const splitName = players[playerId].name.split(" ");
@@ -396,7 +433,6 @@ function convertToPossessive(name) {
 					partyCodeInput.removeEventListener("keypress", this);
 
 					const code = partyCodeInput.value.toUpperCase();
-					const newPartyMembersRef = firebase.database().ref(`parties/${code}/members`);
 					const player = players[playerId];
 		
 					// Leave old party
@@ -405,7 +441,8 @@ function convertToPossessive(name) {
 		
 					// Update party variables
 					partyCode = code;
-					partyMembersRef = newPartyMembersRef;
+					partyMembersRef = firebase.database().ref(`parties/${code}/members`);;
+					chatMessagesRef = firebase.database().ref(`parties/${partyCode}/chat`);
 		
 					// Join new party
 					partyMembersRef.child(playerId).set(player);
@@ -478,6 +515,17 @@ function convertToPossessive(name) {
 			} else {
 				showModal("You are not the party host", "<p>Only the party host can launch a game.</p>");
 			}
+		});
+
+		chatInput.addEventListener("keypress", (event) => {
+			if (event.key == "Enter" && chatInput.value != null) {
+				sendChatMessage(chatInput.value);
+			}
+		});
+
+		chatSendButton.addEventListener("click", () => {
+			if (chatInput.value != null)
+				sendChatMessage(chatInput.value);
 		});
 	}
 

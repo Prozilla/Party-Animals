@@ -47,7 +47,19 @@ h1 {
 }
 
 button {
+	display: flex;
+	align-items: center;
+    justify-content: center;
+	padding: 5px 10px;
 	color: var(--text-color-b);
+	background-color: var(--green-a);
+	border: none;
+	border-radius: var(--border-radius-a);
+	font-family: var(--body-font);
+	font-weight: 600;
+	font-size: 1rem;
+	transition: 200ms ease-in-out;
+	cursor: pointer;
 }
 
 button, .game {
@@ -60,18 +72,28 @@ button, .game {
 	user-select: none;
 }
 
+input {
+	padding: 5px 10px;
+	outline: none;
+	border: none;
+	border-radius: var(--border-radius-a);
+	font-family: var(--body-font);
+	font-size: 1rem;
+	font-weight: 600;
+}
+
 ::selection {
 	color: var(--text-color-b);
 	background-color: var(--yellow-a);
 }
 
-body > div {
+body #page-outer {
 	display: flex;
 	flex-direction: column;
 	height: 100%;
 }
 
-body > div > div {
+body #page-outer #page {
 	display: flex;
 	gap: 30px;
 	justify-content: center;
@@ -289,24 +311,10 @@ body > canvas {
 #player-options #player-name-input #player-name, #party-code-input #party-code {
 	flex: 1;
 	width: 100%;
-	padding: 5px 10px;
-	outline: none;
-	border: none;
-	border-radius: var(--border-radius-a);
-	font-family: var(--body-font);
-	font-weight: 600;
 }
 
 #player-options button, #party-options button {
 	width: calc(50% - 5px);
-	padding: 5px 10px;
-	background-color: var(--green-a);
-	border: none;
-	border-radius: var(--border-radius-a);
-	font-family: var(--body-font);
-	font-weight: 600;
-	transition: 200ms ease-in-out;
-	cursor: pointer;
 }
 
 #player-options button:hover, #party-options button:hover {
@@ -387,6 +395,7 @@ body > canvas {
 #modal #modal-inner #modal-title button {
 	height: 90%;
 	border: none;
+	background-color: var(--text-color-a);
 	border-radius: var(--border-radius-full);
     aspect-ratio: 1;
 	cursor: pointer;
@@ -404,4 +413,83 @@ body > canvas {
 
 #modal #modal-inner #modal-body > * {
 	margin: 0;
+}
+
+/* Chat */
+#chat {
+	display: flex;
+	gap: 10px;
+	flex-direction: column-reverse;
+	position: fixed;
+	bottom: 0;
+	left: 30px;
+	height: auto;
+	width: 275px;
+	padding: 20px;
+	background-color: var(--background-color-b);
+	border-top-left-radius: var(--border-radius-a);
+	border-top-right-radius: var(--border-radius-a);
+}
+
+#chat-input-outer {
+	display: flex;
+	gap: 10px;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+#chat-input {
+	width: 100%;
+}
+
+#chat-messages {
+	display: flex;
+	gap: 5px;
+    flex-direction: column;
+	max-height: 90px;
+    overflow-y: auto;
+}
+
+.chat-message {
+	display: flex;
+	gap: 5px;
+}
+
+.chat-message.hidden {
+	display: none;
+}
+
+.chat-message p {
+	margin: 0;
+}
+
+.chat-message .name {
+	text-shadow: 1px 1px 5px black;
+	white-space: nowrap;
+}
+
+.chat-message .text {
+	word-break: break-all;
+}
+
+.chat-message.red .name {
+	color: var(--red-a);
+}
+.chat-message.orange .name {
+	color: var(--orange-a);
+}
+.chat-message.yellow .name {
+	color: var(--yellow-a);
+}
+.chat-message.green .name {
+	color: var(--green-a);
+}
+.chat-message.blue .name {
+	color: var(--blue-a);
+}
+.chat-message.purple .name {
+	color: var(--purple-a);
+}
+.chat-message.pink .name {
+	color: var(--pink-a);
 }
