@@ -15,9 +15,15 @@
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="show-party">
 	<div id="page-outer">
 		<h1>Party Animals</h1>
+
+		<div id="page-controls">
+			<button id="show-party">Party<i class="fa-solid fa-caret-right"></i></button>
+			<button id="show-games"><i class="fa-solid fa-caret-left"></i>Games</button>
+		</div>
+
 		<div id="page">
 			<!-- Games list -->
 			<main id="games-grid">
@@ -67,40 +73,11 @@
 			<input id="chat-input" type="text">
 			<button id="chat-send">Send</button>
 		</div>
-		<div id="chat-messages">
-			<!-- <span class="chat-message green">
-				<p class="name">Prozilla:</p>
-				<p class="text">Hello there!</p>
-			</span>
-			<span class="chat-message red">
-				<p class="name">Suna:</p>
-				<p class="text">Hi!</p>
-			</span>
-			<span class="chat-message blue">
-				<p class="name">Cookie:</p>
-				<p class="text">Hello!</p>
-			</span>
-			<span class="chat-message green">
-				<p class="name">Prozilla:</p>
-				<p class="text">Hello there!</p>
-			</span>
-			<span class="chat-message red">
-				<p class="name">Suna:</p>
-				<p class="text">Hi!</p>
-			</span>
-			<span class="chat-message yellow hidden">
-				<p class="name">Cookie:</p>
-				<p class="text">Hello!</p>
-			</span>
-			<span class="chat-message purple">
-				<p class="name">Suna:</p>
-				<p class="text">Hi!</p>
-			</span>
-			<span class="chat-message pink">
-				<p class="name">Cookie:</p>
-				<p class="text">Hello!</p>
-			</span> -->
-		</div>
+		<div id="chat-messages"></div>
+		<span id="chat-header">
+			<p id="chat-title">Party chat</p>
+			<button id="toggle-chat"><i class="fa-solid fa-caret-down"></i></button>
+		</span>
 	</div>
 
 	<!-- Initialize firebase  -->

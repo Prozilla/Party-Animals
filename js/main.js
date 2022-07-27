@@ -9,7 +9,7 @@ for (let i = 0; i < gameNames.length; i++) {
 	});
 }
 
-const minPlayers = 2;
+const minPlayers = 1;
 
 const animals = [
 	"Pig",
@@ -73,7 +73,7 @@ function convertToPossessive(name) {
 	let playerRef;
 
 	// Party
-	let party;
+	let party = {};
 	let players = {};
 	let playerElements = {};
 	const playerList = document.querySelector("#player-list #players");
@@ -98,14 +98,19 @@ function convertToPossessive(name) {
 	let allowClickingModalAway = true;
 
 	// Chat
+	const chat = document.querySelector("#chat");
 	const chatInput = document.querySelector("#chat-input");
 	const chatSendButton = document.querySelector("#chat-send");
+	const chatToggle = document.querySelector("#chat-header");
 	const chatMessagesList = document.querySelector("#chat-messages");
-	let chatMessageElements = {};
 	let chatMessagesRef;
 
 	// Games
 	const gamesGrid = document.querySelector("#games-grid");
+
+	// Page controls
+	const showPartyButton = document.querySelector("#show-party");
+	const showGamesButton = document.querySelector("#show-games");
 
 	function sendChatMessage(text) {
 		chatInput.value = "";
@@ -118,6 +123,23 @@ function convertToPossessive(name) {
 			senderId: playerId,
 			text: text
 		});
+	}
+
+	function showChatMessage(senderName, color, text, includeColon) {
+		const newMessageElement = document.createElement("span");
+		newMessageElement.classList.add("chat-message", color.toLowerCase());
+
+		newMessageElement.innerHTML = `
+			<p class="name">${includeColon ? senderName + ":" : senderName}</p>
+			<p class="text">${text}</p>`;
+
+		chatMessagesList.appendChild(newMessageElement);
+
+		chatMessagesList.scrollTop = chatMessagesList.scrollHeight;
+	}
+
+	function clearChat() {
+		chatMessagesList.innerHTML = "";
 	}
 
 	function storePlayerData() {
@@ -207,6 +229,8 @@ function convertToPossessive(name) {
 			isPublic: true,
 		});
 
+		clearChat();
+
 		partyMembersRef = firebase.database().ref(`parties/${partyCode}/members`);
 		chatMessagesRef = firebase.database().ref(`parties/${partyCode}/chat`);
 		initParty();
@@ -236,6 +260,7 @@ function convertToPossessive(name) {
 
 		// Populate party
 		const partyHost = playerId;
+		party.host = playerId;
 
 		partyRef.update({
 			members: partyMembers,
@@ -335,6 +360,8 @@ function convertToPossessive(name) {
 		partyMembersRef.on("child_added", (snapshot) => {
 			const newPlayer = snapshot.val();
 
+			console.log("Player joined: " + newPlayer.id);
+
 			const newPlayerElement = document.createElement("div");
 			newPlayerElement.classList.add("player");
 			newPlayerElement.innerHTML = `
@@ -349,31 +376,29 @@ function convertToPossessive(name) {
 
 			playerElements[newPlayer.id] = newPlayerElement;
 			playerList.appendChild(newPlayerElement);
+
+			if (party.host != null && party.host != newPlayer.id)
+				showChatMessage(newPlayer.name, newPlayer.color, "has joined the party.", false);
 		});
 
 		// Fires whenever a player leaves
 		partyMembersRef.on("child_removed", (snapshot) => {
-			const removedKey = snapshot.val().id;
+			const removedPlayer = snapshot.val();
+			const removedKey = removedPlayer.id;
+
+			console.log("Player left: " + removedKey);
+
 			playerList.removeChild(playerElements[removedKey]);
 			delete playerElements[removedKey];
+
+			showChatMessage(removedPlayer.name, removedPlayer.color, "has left the party.", false);
 		});
 
 		chatMessagesRef.on("child_added", (snapshot) => {
 			const newMessage = snapshot.val();
-			const key = snapshot.key;
 			const sender = players[newMessage.senderId];
 
-			const newMessageElement = document.createElement("span");
-			newMessageElement.classList.add("chat-message", sender.color.toLowerCase());
-
-			newMessageElement.innerHTML = `
-				<p class="name">${sender.name}:</p>
-				<p class="text">${newMessage.text}</p>`;
-
-			chatMessageElements[key] = newMessageElement;
-			chatMessagesList.appendChild(newMessageElement);
-
-			chatMessagesList.scrollTop = chatMessagesList.scrollHeight;
+			showChatMessage(sender.name, sender.color, newMessage.text, true);
 		});
 	}
 
@@ -438,9 +463,10 @@ function convertToPossessive(name) {
 					// Leave old party
 					partyMembersRef.child(playerId).remove();
 					partyMembersRef.parent.remove(); // TO DO: This deletes the party, which should be changed to only happen when the party is empty and otherwise assign a new host
-		
+
 					// Update party variables
 					partyCode = code;
+					party.host = null;
 					partyMembersRef = firebase.database().ref(`parties/${code}/members`);;
 					chatMessagesRef = firebase.database().ref(`parties/${partyCode}/chat`);
 		
@@ -450,6 +476,10 @@ function convertToPossessive(name) {
 		
 					// Show new party
 					initParty();
+
+					// Update chat
+					clearChat();
+					showChatMessage(player.name, player.color, "has joined the party.", false);
 				}
 			});
 		});
@@ -461,11 +491,15 @@ function convertToPossessive(name) {
 			if (partyMemberCount < 2)
 				return showModal("You can't leave yourself", "<p>You are already in an empty party!</p>");
 
+			// Leave old party
+			partyMembersRef.child(playerId).remove();
+
 			// Remove old party
 			for (const playerElement of Object.values(playerElements)) {
 				playerElement.remove();
 			}
 
+			// Create new party
 			createParty();
 
 			const partyMembers = {};
@@ -478,10 +512,9 @@ function convertToPossessive(name) {
 			}
 
 			// Populate party
-			partyHost = playerId;
 			partyRef.update({
 				members: partyMembers,
-				host: partyHost,
+				host: playerId,
 			});
 
 			playerRef = firebase.database().ref(`parties/${partyCode}/members/${playerId}`);
@@ -526,6 +559,22 @@ function convertToPossessive(name) {
 		chatSendButton.addEventListener("click", () => {
 			if (chatInput.value != null)
 				sendChatMessage(chatInput.value);
+		});
+
+		chatToggle.addEventListener("click", () => {
+			if (chat.classList.contains("active")) {
+				chat.classList.remove("active");
+			} else {
+				chat.classList.add("active");
+			}
+		});
+
+		showPartyButton.addEventListener("click", () => {
+			document.body.classList.add("show-party");
+		});
+
+		showGamesButton.addEventListener("click", () => {
+			document.body.classList.remove("show-party");
 		});
 	}
 

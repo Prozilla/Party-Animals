@@ -1,4 +1,5 @@
 import WebFontFile from "../webFontFile.js";
+import { GameScene, Util } from "./game.js";
 
 export const name = "slime";
 
@@ -15,7 +16,7 @@ const colors = {
 }
 
 // Debug
-let allowEndGame = true;
+let allowEndGame = false;
 
 // Orbs
 let orbs;
@@ -42,52 +43,8 @@ let partyCode;
 
 // Input
 let mouseX, mouseY;
-const screenMargin = 50;
 
-function clampValue(value, min, max) {
-	return value < min ? min : value > max ? max : value;
-}
-
-function randomRange(min, max) {
-	min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function randomPosition() {
-	return {
-		x: randomRange(0, worldSize),
-		y: randomRange(0, worldSize)
-	}
-}
-
-function calculateDistance(position1, position2) {
-	const horizontalDistance = position1.x - position2.x;
-	const verticalDistance = position1.y - position2.y;
-
-	return Math.sqrt(horizontalDistance * horizontalDistance + verticalDistance * verticalDistance);
-}
-
-function moveTowards(x, y, targetX, targetY, factor) {
-	const vector = {x: targetX - x, y: targetY - y};
-
-	const magnitude = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
-	const direction = {x: vector.x / magnitude, y: vector.y / magnitude};
-
-	return {x: x + direction.x * factor, y: y + direction.y * factor};
-}
-
-function generateId(size) {
-    var result = "";
-    var characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    var charactersCount = characters.length;
-
-	for ( var i = 0; i < size; i++ ) {
-		result += characters.charAt(Math.floor(Math.random() * charactersCount));
-	}
-
-   return result;
-}
+const util = new Util();
 
 function endGame(scene, winner, gameDataRef, playersRef, orbsRef) {
 	if (allowEndGame) {
@@ -116,7 +73,7 @@ function initGame(scene) {
 
 	if (hostId == playerData.id) {
 		for (const key of Object.keys(players)) {
-			const position = randomPosition();
+			const position = util.randomPosition(0, 0, worldSize, worldSize);
 			const player = players[key];
 
 			player.x = position.x;
@@ -223,11 +180,11 @@ function initGame(scene) {
 }
 
 function spawnOrb() {
-	const position = randomPosition();
+	const position = util.randomPosition(0, 0, worldSize, worldSize);
 
 	const colorNames = Object.keys(colors);
   	const color = colors[colorNames[Math.floor(colorNames.length * Math.random())]][0];
-	const id = generateId(10);
+	const id = util.generateId(10);
 
 	const orbsRef = firebase.database().ref(`parties/${partyCode}/gameData/orbs/${id}`);
 
@@ -250,6 +207,15 @@ function addScore(amount) {
 	});
 }
 
+function killPlayer(player) {
+	const playerRef = firebase.database().ref(`parties/${partyCode}/gameData/players/${player.id}`);
+	playerRef.update({
+		isDead: true
+	});
+
+	addScore(player.score / 2);
+}
+
 function mouseMove(event) {
 	mouseX = event.clientX;
 	mouseY = event.clientY;
@@ -261,45 +227,17 @@ function mouseMove(event) {
 	}
 }
 
-function hexToRgb(hex) {
-	var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-	return result ? {
-		r: parseInt(result[1], 16),
-		g: parseInt(result[2], 16),
-		b: parseInt(result[3], 16)
-	} : null;
-}
-
-function changeImageColor(context, image, color) {
-	const pixels = context.getImageData(0, 0, image.width, image.height);
-	color = hexToRgb(color);
-
-    for (let i = 0; i < pixels.data.length / 4; i++)
-    {
-        changePixelColor(pixels.data, i * 4, color);
-    }
-
-    context.putImageData(pixels, 0, 0);
-}
-
-function changePixelColor(data, index, color)
-{
-    data[index] = color.r;
-    data[index + 1] = color.g;
-    data[index + 2] = color.b;
-}
-
-const Slime = new Phaser.Class({Extends: Phaser.Scene,
-	preload: function() {
+class Slime extends GameScene {
+	preload() {
 		this.load.addFile(new WebFontFile(this.load, "Fredoka"));
 
 		Object.keys(players).forEach((key) => {
 			const player = players[key];
 			this.load.svg(player.id, `media/characters/${player.animal.toLowerCase()}.svg`);
 		});
-	},
+	}
 
-    create: function() {
+    create() {
 		initGame(this);
 
 		this.orbsGroup = this.add.group();
@@ -321,7 +259,7 @@ const Slime = new Phaser.Class({Extends: Phaser.Scene,
 
 			const context = newTexture.getSourceImage().getContext("2d");
 			context.drawImage(originalTexture, 0, 0);
-			changeImageColor(context, originalTexture, colors[player.color][1]);
+			util.changeImageColor(context, originalTexture, colors[player.color][1]);
 
 			gameObject.character = this.add.image(player.x, player.y, player.id + "_new");
 			gameObject.character.setDepth(101);
@@ -355,9 +293,9 @@ const Slime = new Phaser.Class({Extends: Phaser.Scene,
 
 		graphics.lineStyle(thickness, color, 1);
     	graphics.strokeRect(-thickness / 2, -thickness / 2, worldSize + thickness, worldSize + thickness);
-    },
+    }
 
-	update: function(time, delta) {
+	update(time, delta) {
 		// Handle orb spawning
 		if (hostId == playerData.id) {
 			if (lastOrbSpawn == null) {
@@ -377,20 +315,20 @@ const Slime = new Phaser.Class({Extends: Phaser.Scene,
 			const worldMouseX = parseInt(mouseX + this.cameras.main.scrollX);
 			const worldMouseY = parseInt(mouseY + this.cameras.main.scrollY);
 
-			const distance = calculateDistance(playerData, {x: worldMouseX, y: worldMouseY});
-			let factor = clampValue(screen.width > screen.height ? distance / (screen.height / 4) : distance / (screen.width / 4), 0, 1);
+			const distance = util.calculateDistance(playerData, {x: worldMouseX, y: worldMouseY});
+			let factor = util.clampValue(screen.width > screen.height ? distance / (screen.height / 4) : distance / (screen.width / 4), 0, 1);
 
 			const speed = (playerData.score - startingScore) * speedIncrease + startingSpeed;
 
-			const newPosition = moveTowards(playerData.x, playerData.y, worldMouseX, worldMouseY, factor * speed);
+			const newPosition = util.moveTowards(playerData.x, playerData.y, worldMouseX, worldMouseY, factor * speed);
 
 			// Move player
 			let x = newPosition.x;
 			let y = newPosition.y;
 
 			// Clamp position
-			x = clampValue(x, 0 + playerData.score / 2, worldSize - playerData.score / 2);
-			y = clampValue(y, 0 + playerData.score / 2, worldSize - playerData.score / 2);
+			x = util.clampValue(x, 0 + playerData.score / 2, worldSize - playerData.score / 2);
+			y = util.clampValue(y, 0 + playerData.score / 2, worldSize - playerData.score / 2);
 
 			playerRef.update({
 				x: x,
@@ -399,57 +337,54 @@ const Slime = new Phaser.Class({Extends: Phaser.Scene,
 		}
 
 		// Collect orbs
-		Object.keys(orbs).forEach((key) => {
-			if (key != null) {
-				const orb = orbs[key];
-				const distance = calculateDistance(playerData, orb);
+		if (!playerData.isDead) {
+			Object.keys(orbs).forEach((key) => {
+				if (key != null) {
+					const orb = orbs[key];
+					const distance = util.calculateDistance(playerData, orb);
 
-				if (distance < playerData.score * 1.5) {
-					if (distance < playerData.score - orbRadius) {
-						collectOrb(orb);
-					} else {
-						// Pull orb towards player
-						const pullForce = Math.pow(1 - distance / 10000, 3);
-						const speed = pullForce < 0 ? 0 : pullForce;
+					if (distance < playerData.score * 1.5) {
+						if (distance < playerData.score - orbRadius) {
+							collectOrb(orb);
+						} else {
+							// Pull orb towards player
+							const pullForce = Math.pow(1 - distance / 10000, 3);
+							const speed = pullForce < 0 ? 0 : pullForce;
 
-						const offsetX = playerData.x - orb.x;
-						const offsetY = playerData.y - orb.y;
+							const offsetX = playerData.x - orb.x;
+							const offsetY = playerData.y - orb.y;
 
-						const x = orb.x + offsetX / 1000 * speed;
-						const y = orb.y + offsetY / 1000 * speed;
+							const x = orb.x + offsetX / 1000 * speed;
+							const y = orb.y + offsetY / 1000 * speed;
 
-						const orbsRef = firebase.database().ref(`parties/${partyCode}/gameData/orbs/${orb.id}`);
+							const orbsRef = firebase.database().ref(`parties/${partyCode}/gameData/orbs/${orb.id}`);
 
-						orbsRef.update({
-							x: x,
-							y: y,
-						});
+							orbsRef.update({
+								x: x,
+								y: y,
+							});
+						}
 					}
 				}
-			}
-		});
+			});
 
-		// Kill players
-		Object.keys(players).forEach((key) => {
-			if (key != playerData.id) {
-				const player = players[key];
+			// Kill players
+			Object.keys(players).forEach((key) => {
+				if (key != playerData.id) {
+					const player = players[key];
 
-				if (playerData.score > player.score) {
-					const distance = calculateDistance(playerData, player);
+					if (playerData.score > player.score) {
+						const distance = util.calculateDistance(playerData, player);
 
-					// Check if players intersect
-					if (distance < playerData.score - player.score) {
-						const playerRef = firebase.database().ref(`parties/${partyCode}/gameData/players/${player.id}`);
-						playerRef.update({
-							isDead: true
-						});
+						// Check if players intersect
+						if (distance < playerData.score - player.score)
+							killPlayer(player);
 					}
 				}
-			}
-		});
-	},
-
-});
+			});
+		}
+	}
+}
 
 export function start(currentPlayers, playerId, currentHostId, currentPartyCode) {
 	console.log("Starting slime");
@@ -458,8 +393,6 @@ export function start(currentPlayers, playerId, currentHostId, currentPartyCode)
 	players = currentPlayers;
 	playerGameObjects = {};
 	orbs = {};
-
-	console.log(members);
 
 	playerData = players[playerId];
 	hostId = currentHostId;
@@ -482,7 +415,7 @@ export function start(currentPlayers, playerId, currentHostId, currentPartyCode)
 		dom: {
 			createContainer: true
 		},
-		scene: [Slime],
+		scene: [new Slime()],
 		backgroundColor: "#fff",
 	};
 	

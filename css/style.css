@@ -56,10 +56,14 @@ button {
 	border: none;
 	border-radius: var(--border-radius-a);
 	font-family: var(--body-font);
-	font-weight: 600;
+	font-weight: 500;
 	font-size: 1rem;
 	transition: 200ms ease-in-out;
 	cursor: pointer;
+}
+
+button:hover {
+	background-color: var(--green-b);
 }
 
 button, .game {
@@ -429,6 +433,40 @@ body > canvas {
 	background-color: var(--background-color-b);
 	border-top-left-radius: var(--border-radius-a);
 	border-top-right-radius: var(--border-radius-a);
+	transform: translateY(calc(100% - 40px));
+	transition: transform 200ms ease-in-out;
+	z-index: 200;
+}
+
+#chat.active {
+	transform: translateY(0);
+}
+
+#chat-header {
+	display: flex;
+	align-items: center;
+    justify-content: space-between;
+	transform: translateY(-12px);
+	transition: transform 200ms ease-in-out;
+}
+
+#chat.active #chat-header {
+	transform: translateY(0);
+}
+
+#chat-header #chat-title {
+	margin: 0;
+	font-family: var(--title-font);
+}
+
+#chat-header #toggle-chat {
+	color: var(--text-color-a);
+	background: none;
+	transition: transform 200ms ease-in-out;
+}
+
+#chat:not(.active) #toggle-chat {
+	transform: rotate(180deg);
 }
 
 #chat-input-outer {
@@ -447,7 +485,23 @@ body > canvas {
 	gap: 5px;
     flex-direction: column;
 	max-height: 90px;
+	margin-right: 5px;
     overflow-y: auto;
+}
+
+#chat-messages::-webkit-scrollbar {
+	width: 20px;
+}
+
+#chat-messages::-webkit-scrollbar-track {
+	background: none;
+}
+
+#chat-messages::-webkit-scrollbar-thumb {
+	border-radius: var(--border-radius-full);
+	border: 5px solid transparent;
+	background-color: var(--background-color-a);
+	background-clip: padding-box;
 }
 
 .chat-message {
@@ -469,7 +523,7 @@ body > canvas {
 }
 
 .chat-message .text {
-	word-break: break-all;
+	word-break: break-word;
 }
 
 .chat-message.red .name {
@@ -492,4 +546,64 @@ body > canvas {
 }
 .chat-message.pink .name {
 	color: var(--pink-a);
+}
+
+/* Responsiveness */
+#page-controls {
+	display: none;
+}
+
+@media screen and (max-width: 600px) {
+	body {
+		padding-right: 0;
+		padding-left: 0;
+		width: 100%;
+	}
+
+	body #page-outer {
+		overflow: hidden;
+	}
+
+	body #page-outer h1 {
+		display: flex;
+		justify-content: center;
+	}
+
+	body #page-outer #page {
+		gap: 0;
+		width: 200%;
+		transition: transform 200ms ease-in-out;
+		transform: translateX(0);
+	}
+
+	body.show-party #page-outer #page {
+		transform: translateX(-50%);
+	}
+
+	#page-controls {
+		display: flex;
+		gap: 60px;
+    	justify-content: center;
+		width: 200%;
+		transition: transform 200ms ease-in-out;
+		transform: translateX(0);
+	}
+
+	body.show-party #page-controls {
+		transform: translateX(-50%);
+	}
+
+	#page-controls button {
+		display: flex;
+		gap: 5px;
+		align-items: center;
+		width: 80px;
+	}
+
+	main#games-grid, aside#side-menu {
+		flex: 1;
+		width: 100%;
+		margin: 20px 30px 5px 30px;
+		box-sizing: border-box;
+	}
 }
