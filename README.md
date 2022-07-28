@@ -1,10 +1,10 @@
 # Party-Animals
 
-Party Animals is a collection of multiplayer games you can play in a party with friends.
+Party Animals is a multiplayer party game platform where you can invite your friends and play games quickly and easily.
 
 ## How does it work
 
-One player creates a party of which they then become the party host. Other players can then join using a party link or code or by joining a random public party. Players in the party must then vote for a game that they would like to play. Some games require teams to be made at the start of the game. The winner(s) of a game gain 1 point at the end of each game and the player with the most score becomes the party king.
+One player creates a party of which they then become the party host. Other players can then join using a party link* or code or by joining a random public party*. Players in the party must then vote for a game that they would like to play*. Some games require teams to be made at the start of the game*. The winner(s) of a game gain 1 point at the end of each game and the player with the most score becomes the party king*.
 
 ## Features (note: most features are not implemented yet)
 - A party: a group of players that play games together, can either be private or public.
@@ -14,3 +14,5 @@ One player creates a party of which they then become the party host. Other playe
 - Chat: players can chat with each other via the chat system.
 - Player settings: a player can choose their animal, color and name. Names can either be auto-generated (adjective + player's animal) or custom.
 - Party guide: a list of tutorials to explain how Party Animals functions.
+
+* - These features are planned or being worked on but haven't been released yet.
