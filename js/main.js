@@ -9,7 +9,7 @@ for (let i = 0; i < gameNames.length; i++) {
 	});
 }
 
-const minPlayers = 1;
+const minPlayers = 2;
 
 const animals = [
 	"Pig",
