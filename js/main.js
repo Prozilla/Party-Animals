@@ -113,6 +113,9 @@ function convertToPossessive(name) {
 	const showGamesButton = document.querySelector("#show-games");
 
 	function sendChatMessage(text) {
+		if (chatInput.value.trim().length == 0)
+			return;
+
 		chatInput.value = "";
 
 		const time = Date.now();
@@ -551,14 +554,13 @@ function convertToPossessive(name) {
 		});
 
 		chatInput.addEventListener("keypress", (event) => {
-			if (event.key == "Enter" && chatInput.value != null) {
+			if (event.key == "Enter") {
 				sendChatMessage(chatInput.value);
 			}
 		});
 
 		chatSendButton.addEventListener("click", () => {
-			if (chatInput.value != null)
-				sendChatMessage(chatInput.value);
+			sendChatMessage(chatInput.value);
 		});
 
 		chatToggle.addEventListener("click", () => {
