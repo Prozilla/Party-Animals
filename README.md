@@ -26,3 +26,5 @@ One player creates a party of which they then become the party host. Other playe
 - [ ] Start screen
 - [ ] Spectator mode
 - [ ] Chat filter (remove all links except party animals links)
+- [ ] Loading screen
+- [ ] Tabs (buttons on the left side of the screen, bottom on mobile) to switch between menus like games, party, player customisation, help and start menu
