@@ -16,3 +16,13 @@ One player creates a party of which they then become the party host. Other playe
 - Party guide: a list of tutorials to explain how Party Animals functions.
 
 * - These features are planned or being worked on but haven't been released yet.
+
+## To do
+- [ ] Random player picker
+- [ ] Synchronisation (wait for all players before starting game
+- [ ] Countdown before starting game
+- [ ] Party king (player with most points)
+- [ ] Invite links
+- [ ] Start screen
+- [ ] Spectator mode
+- [ ] Chat filter (remove all links except party animals links)
