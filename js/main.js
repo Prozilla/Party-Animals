@@ -667,7 +667,7 @@ const parameters = getURLParameters();
 		// Menu buttons
 		const menuId = localStorage.getItem("activeMenuId");
 
-		if (menuId) {
+		if (menuId != null) {
 			showMenu(menuId);
 		} else {
 			showMenu("home-menu");
