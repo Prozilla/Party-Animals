@@ -27,6 +27,9 @@
 
 	--title-font: "Fredoka One", cursive;
 	--body-font: "Fredoka", sand-serif;
+
+	--menu-buttons-width: 45px;
+	--menu-buttons-margin: 50px;
 }
 
 html, body {
@@ -38,7 +41,6 @@ html, body {
 
 body {
 	margin: 0;
-	padding: 10px 75px 50px 75px;
 	color: var(--text-color-a);
 	font-family: var(--body-font);
 	box-sizing: border-box;
@@ -49,7 +51,7 @@ h1 {
 	font-weight: 400;
 }
 
-button, .game {
+button, .game, #title, #home-menu h1 {
 	-webkit-tap-highlight-color: transparent;
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
@@ -74,64 +76,19 @@ input {
 	background-color: var(--yellow-a);
 }
 
-body #page-outer {
+body #main {
 	display: flex;
-	flex-direction: column;
+    gap: 50px;
+	width: 100%;
 	height: 100%;
+	overflow: hidden;
 }
 
-/* TO DO: page should have a scrollable child and border radius with overflow hidden*/
-
-body #page-outer #page {
+body #main main {
 	display: flex;
-	gap: 30px;
-	justify-content: center;
-	padding: 20px 0;
-}
-
-main#games-grid, aside#side-menu {
-	flex: 1;
-}
-
-main#games-grid {
-	display: flex;
-	flex-wrap: wrap;
-	align-content: flex-start;
-	flex-grow: 2;
-}
-
-main#games-grid .game {
-	flex-basis: 50%;
-    aspect-ratio: 1 / 1;
-	background-color: var(--background-color-b);
-	border-radius: var(--border-radius-a);
-}
-
-aside#side-menu {
-	display: flex;
-	gap: 30px;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-aside#side-menu #player-list {
-	display: flex;
-	gap: 10px;
 	flex-direction: column;
-	padding: 20px;
-	background-color: var(--background-color-b);
-	border-radius: var(--border-radius-a);
-}
-
-aside#side-menu #player-list > p {
-	font-family: var(--title-font);
-	margin: 0;
-}
-
-aside#side-menu #player-list #players {
-	display: flex;
-	gap: 10px;
-	flex-direction: column;
+	width: 100%;
+	height: 100%;
 }
 
 /* Buttons */
@@ -181,15 +138,15 @@ button {
 }
 
 /* Scrollbars */
-body::-webkit-scrollbar, #chat-messages::-webkit-scrollbar {
+body::-webkit-scrollbar, #chat-messages::-webkit-scrollbar, section::-webkit-scrollbar {
 	width: 20px;
 }
 
-body::-webkit-scrollbar-track, #chat-messages::-webkit-scrollbar-track {
+body::-webkit-scrollbar-track, #chat-messages::-webkit-scrollbar-track, section::-webkit-scrollbar-track {
 	background: none;
 }
 
-body::-webkit-scrollbar-thumb, #chat-messages::-webkit-scrollbar-thumb {
+body::-webkit-scrollbar-thumb, #chat-messages::-webkit-scrollbar-thumb, section::-webkit-scrollbar-thumb {
 	border-radius: var(--border-radius-full);
 	border: 5px solid transparent;
 	background-color: var(--background-color-b);
@@ -205,6 +162,112 @@ body::-webkit-scrollbar-thumb, #chat-messages::-webkit-scrollbar-thumb {
 	border-bottom: 5px solid var(--background-color-d);
 }
 
+/* Menus */
+#menu-buttons {
+	width: 45px;
+	background-color: var(--background-color-b);
+	border-top-right-radius: var(--border-radius-full);
+	border-bottom-right-radius: var(--border-radius-full);
+}
+
+#menu-buttons #menu-buttons-inner {
+	--padding: 100px;
+
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-evenly;
+	width: 100%;
+	height: 100%;
+	padding: var(--padding) 0;
+    box-sizing: border-box;
+}
+
+#menu-buttons #menu-buttons-inner button {
+	z-index: 1;
+}
+
+#menu-buttons-indicator {
+	position: absolute;
+	left: -100%; /* Hide before page is loaded */
+	width: 80%;
+    background-color: var(--background-color-a);
+	border-radius: var(--border-radius-full);
+    aspect-ratio: 1;
+	transition: all 200ms ease-in-out;
+	-webkit-transition: all 200ms ease-in-out;
+	transform: translate(-50%, -50%);
+}
+
+#menus {
+	flex: 1;
+	position: relative;
+}
+
+/* TO DO: make menus move up and down when switched between */
+#menus > section {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: calc(100% - var(--menu-buttons-margin));
+	height: calc(100% - 70px);
+	border-radius: var(--border-radius-a);
+	opacity: 0;
+	overflow-y: auto;
+	/* transition: 200ms ease-in-out;
+	-webkit-transition: 200ms ease-in-out; */
+}
+
+#menus > section.active {
+	opacity: 1;
+}
+
+#menus > section:not(.active) {
+	pointer-events: none;
+}
+
+#menus > section#customization-menu {
+	overflow-y: visible;
+}
+
+#title.hidden {
+	display: none;
+}
+
+/* Home */
+#home-menu {
+	display: flex;
+	gap: 50px;
+	flex-direction: column;
+    align-items: center;
+    justify-content: center;
+	padding-bottom: 100px;
+    box-sizing: border-box;
+}
+
+#home-menu h1 {
+	font-size: 7.5vw;
+}
+
+#home-menu #home-buttons {
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
+	justify-content: center;
+}
+
+#home-menu #home-buttons button {
+	padding: 7.5px 15px;
+	font-size: 1.5rem;
+}
+
+#home-menu #home-buttons .new-flex-row {
+	width: 100%;
+	display: flex;
+	align-items: inherit;
+	justify-content: inherit;
+}
+
 /* Games */
 body > canvas {
 	position: absolute;
@@ -212,15 +275,27 @@ body > canvas {
 	left: 0;
 	width: 100%;
 	height: 100%;
+	z-index: 10;
 }
 
 /* Game list */
-.game {
+#games-grid {
+	display: flex;
+	flex-wrap: wrap;
+	align-content: flex-start;
+	flex-grow: 2;
+}
+
+#games-grid .game {
+	flex-basis: 50%;
 	display: flex;
 	gap: 10px;
 	align-items: center;
 	flex-direction: column;
 	padding: 20px;
+    aspect-ratio: 1 / 1;
+	background-color: var(--background-color-b);
+	border-radius: var(--border-radius-a);
 	cursor: pointer;
 }
 
@@ -237,6 +312,26 @@ body > canvas {
 }
 
 /* Player list */
+#player-list {
+	display: flex;
+	gap: 10px;
+	flex-direction: column;
+	padding: 20px;
+	background-color: var(--background-color-b);
+	border-radius: var(--border-radius-a);
+}
+
+#player-list > p {
+	font-family: var(--title-font);
+	margin: 0;
+}
+
+#player-list #players {
+	display: flex;
+	gap: 10px;
+	flex-direction: column;
+}
+
 .player {
 	display: flex;
 	gap: 10px;
@@ -412,6 +507,7 @@ body > canvas {
     height: 100%;
 	backdrop-filter: blur(5px);
     background-color: rgba(20, 20, 20, 40%);
+	z-index: 300;
 }
 #modal.active {
 	display: flex;
@@ -472,7 +568,7 @@ body > canvas {
 	flex-direction: column-reverse;
 	position: fixed;
 	bottom: 0;
-	left: 30px;
+	left: calc(var(--menu-buttons-width) + var(--menu-buttons-margin));
 	height: auto;
 	width: 275px;
 	padding: 20px;
@@ -499,6 +595,7 @@ body > canvas {
 	transform: translateY(-12px);
 	-ms-transform: translateY(-12px);
 	-webkit-transform: translateY(-12px);
+	cursor: pointer;
 }
 
 #chat.active #chat-header {
@@ -527,6 +624,8 @@ body > canvas {
 
 #chat-input {
 	width: 100%;
+	height: fit-content;
+    margin-top: 4px;
 }
 
 #chat-messages {
@@ -594,50 +693,17 @@ body > canvas {
 		width: 100%;
 	}
 
-	body #page-outer {
-		overflow: hidden;
+	/* Home */
+	#home-menu #home-buttons {
+		flex-direction: column;
 	}
 
-	body #page-outer h1 {
-		display: flex;
-		justify-content: center;
+	#home-menu #home-buttons button {
+		padding: 5px 10px;
+		font-size: 1rem;
 	}
 
-	body #page-outer #page {
-		gap: 0;
-		margin: 20px 0;
-		width: 200%;
-		overflow-y: auto;
-		transition: transform 200ms ease-in-out;
-		-webkit-transition: transform 200ms ease-in-out;
-	}
-
-	body.show-party #page-outer #page {
-		transform: translateX(-50%);
-		-ms-transform: translateX(-50%);
-		-webkit-transform: translateX(-50%);
-	}
-
-	#page-controls {
-		display: flex;
-		gap: 60px;
-    	justify-content: center;
-		width: 200%;
-		transition: transform 200ms ease-in-out;
-		-webkit-transition: transform 200ms ease-in-out;
-	}
-
-	body.show-party #page-controls {
-		transform: translateX(-50%);
-		-ms-transform: translateX(-50%);
-		-webkit-transform: translateX(-50%);
-	}
-
-	#page-controls button {
-		gap: 5px;
-		width: 80px;
-	}
-
+	/* Game list */
 	main#games-grid, aside#side-menu {
 		flex: 1;
 		width: 100%;
@@ -645,10 +711,17 @@ body > canvas {
 		box-sizing: border-box;
 	}
 
+	/* Modal */
+	#modal #modal-inner {
+		margin: 0 20px;
+	}
+
+	/* Chat */
 	#chat {
-		left: 20px;
-		right: 20px;
-		width: calc(100% - 40px);
+		--margin: 50px;
+		left: var(--margin);
+		right: var(--margin);
+		width: calc(100% - calc(var(--margin) * 2));
 		box-sizing: border-box;
 	}
 }

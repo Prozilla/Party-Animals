@@ -9,6 +9,15 @@ for (let i = 0; i < gameNames.length; i++) {
 	});
 }
 
+const debugMode = true; // Set to true for debugging
+const localHosting = window.location.pathname.startsWith("/party-animals/");
+
+if (!localHosting) {
+	debugMode = false;
+} else if (debugMode) {
+	console.log("Debug mode enabled");
+}
+
 const minPlayers = 2;
 
 const animals = [
@@ -33,7 +42,26 @@ const colors = [
 	"Blue",
 	"Purple",
 	"Pink"
-]
+];
+
+class Modal {
+	constructor(title, body) {
+		this.title = title;
+		this.body = body;
+	}
+}
+
+const modals = {
+	"JOIN_PARTY": new Modal("Join a party", `
+		<span id="party-code-input">
+			<label for="party-code">Enter a party code</label>
+			<input id="party-code" maxlength="6" type="text">
+		</span>`),
+	"INVITE_PLAYERS": new Modal("Invite players", `<p>Your party code: <strong>[PARTY_CODE]</strong></p>`),
+	"EMPTY_PARTY": new Modal("You can't leave yourself", `<p>You are already in an empty party!</p>`),
+	"NEED_MORE_PLAYERS": new Modal("You need more players", `<p>You can't launch a game by yourself. Invite more players to start playing.</p>`),
+	"NOT_HOST": new Modal("You are not the party host", `<p>Only the party host can launch a game.</p>`),
+};
 
 function randomFromArray(array) {
 	return array[Math.floor(Math.random() * array.length)];
@@ -65,6 +93,35 @@ function convertToPossessive(name) {
 	const lastCharacter = name.slice(-1).toLowerCase();
 	return lastCharacter == "s" ? `${name}'` : `${name}'s`;
 }
+
+function getURLParameters() {
+	let parameters = window.location.search != "" ? {} : null;
+
+	if (parameters)
+		window.location.search.substring(1).split("&").forEach(query => 
+			parameters[query.split("=")[0]] = query.split("=")[1]
+		);
+
+	return parameters;
+}
+
+function moveElementToElement(element, target) {
+	const rect = target.getBoundingClientRect();
+
+	element.style.left = `${(rect.left + rect.right) / 2}px`;
+	element.style.top = `${(rect.top + rect.bottom) / 2}px`;
+}
+
+function toggleClass(element, active, className) {
+	if (active) {
+		if (!element.classList.contains(className))
+			element.classList.add(className);
+	} else if (element.classList.contains(className)) {
+		element.classList.remove(className);
+	}
+}
+
+const parameters = getURLParameters();
 
 (function init() {
 
@@ -108,9 +165,38 @@ function convertToPossessive(name) {
 	// Games
 	const gamesGrid = document.querySelector("#games-grid");
 
-	// Page controls
-	const showPartyButton = document.querySelector("#show-party");
-	const showGamesButton = document.querySelector("#show-games");
+	// Menu buttons
+	const menuButtonsParent = document.querySelector("#menu-buttons-inner");
+	const menuButtonsIndicator = document.querySelector("#menu-buttons-indicator");
+	const menusParent = document.querySelector("#menus");
+	const title = document.querySelector("#title");
+
+	// Home
+	const joinPartyHomeButton = document.querySelector("#home-join-party");
+	const createPartyHomeButton = document.querySelector("#home-create-party");
+	const browseGamesHomeButton = document.querySelector("#home-browse-games");
+	let activeMenuId;
+
+	function moveMenuButtonsIndicator() {
+		const menuButton = menuButtonsParent.querySelector(`button[data-menu="${activeMenuId}"]`);
+		moveElementToElement(menuButtonsIndicator, menuButton);
+	}
+
+	function showMenu(id) {
+		activeMenuId = id;
+		localStorage.setItem("activeMenuId", id);
+
+		// Hide title when home menu is activated
+		toggleClass(title, id == "home-menu", "hidden");
+
+		// Show the right menu and hide the others
+		for(let i = 0; i < menusParent.children.length; i++){
+            const menu = menusParent.children[i];
+			toggleClass(menu, menu.id == id, "active");
+        }
+
+		moveMenuButtonsIndicator();
+	}
 
 	function sendChatMessage(text) {
 		if (chatInput.value.trim().length == 0)
@@ -193,13 +279,18 @@ function convertToPossessive(name) {
 	}
 
 	function launchGame(name) {
-		games[name].start(players, playerId, party.host, partyCode);
+		games[name].start(players, playerId, party.host, partyCode, debugMode);
 	}
 
-	function showModal(title, body) {
+	function showModal(modalContent) {
+		const title = modalContent.title;
+		const html = modalContent.body;
+		html.replace("[PARTY_CODE]", partyCode);
+
 		console.log(`Showing "${title}" modal`);
+
 		modal.querySelector("#modal-title").childNodes[0].textContent = title;
-		modal.querySelector("#modal-body").innerHTML = body;
+		modal.querySelector("#modal-body").innerHTML = html;
 		modal.classList.add("active");
 
 		// This delay is required because without it, any button click that opens the modal will also immediately close it 
@@ -225,7 +316,9 @@ function convertToPossessive(name) {
 		
 		partyCode = code;
 		partyRef = firebase.database().ref(`parties/${partyCode}`);
-		console.log("Party code: " + partyCode);
+
+		if (debugMode)
+			console.log("Created party with code: " + partyCode);
 
 		partyRef.set({
 			code: partyCode,
@@ -363,7 +456,8 @@ function convertToPossessive(name) {
 		partyMembersRef.on("child_added", (snapshot) => {
 			const newPlayer = snapshot.val();
 
-			console.log("Player joined: " + newPlayer.id);
+			if (debugMode)
+				console.log("Player joined: " + newPlayer.id);
 
 			const newPlayerElement = document.createElement("div");
 			newPlayerElement.classList.add("player");
@@ -389,7 +483,8 @@ function convertToPossessive(name) {
 			const removedPlayer = snapshot.val();
 			const removedKey = removedPlayer.id;
 
-			console.log("Player left: " + removedKey);
+			if (debugMode)
+				console.log("Player left: " + removedKey);
 
 			playerList.removeChild(playerElements[removedKey]);
 			delete playerElements[removedKey];
@@ -406,6 +501,7 @@ function convertToPossessive(name) {
 	}
 
 	function initInterface() {
+		// Player options
 		playerNameInput.addEventListener("change", (event) => {
 			const newName = event.target.value || createName(players[playerId].animal);
 			setPlayerName(newName);
@@ -436,14 +532,9 @@ function convertToPossessive(name) {
 			setPlayerName(newName);
 		});
 
+		// Party options
 		joinPartyButton.addEventListener("click", () => {
-			const html = `
-				<span id=\"party-code-input\">
-					<label for=\"party-code\">Enter a party code</label>
-					<input id=\"party-code\" maxlength=\"6\" type=\"text\">
-				</span>`;
-
-			showModal("Join a party", html);
+			showModal(modals.JOIN_PARTY);
 
 			const partyCodeInput = modal.querySelector("#party-code");
 
@@ -492,7 +583,7 @@ function convertToPossessive(name) {
 
 			const partyMemberCount = Object.keys(party.members).length;
 			if (partyMemberCount < 2)
-				return showModal("You can't leave yourself", "<p>You are already in an empty party!</p>");
+				return showModal(modals.EMPTY_PARTY);
 
 			// Leave old party
 			partyMembersRef.child(playerId).remove();
@@ -525,10 +616,10 @@ function convertToPossessive(name) {
 		});
 
 		invitePlayersButton.addEventListener("click", () => {
-			const html = `<p>Your party code: <strong>${partyCode}</strong></p>`;
-			showModal("Invite players", html);
+			showModal(modals.INVITE_PLAYERS);
 		});
 
+		// Modal
 		modal.querySelector("#close-modal").addEventListener("click", () => {
 			closeModal();
 		});
@@ -541,18 +632,20 @@ function convertToPossessive(name) {
 			}
 		})
 
+		// Games
 		gamesGrid.firstElementChild.addEventListener("click", () => {
 			if (party.host == playerId) {
-				if (Object.keys(players).length >= minPlayers) {
+				if (Object.keys(players).length >= minPlayers || debugMode) {
 					launchGame("slime");
 				} else {
-					showModal("You need more players", "<p>You can't launch a game by yourself. Invite more players to start playing.</p>");
+					showModal(modals.NEED_MORE_PLAYERS);
 				}
 			} else {
-				showModal("You are not the party host", "<p>Only the party host can launch a game.</p>");
+				showModal(modals.NOT_HOST);
 			}
 		});
 
+		// Chat
 		chatInput.addEventListener("keypress", (event) => {
 			if (event.key == "Enter") {
 				sendChatMessage(chatInput.value);
@@ -571,18 +664,50 @@ function convertToPossessive(name) {
 			}
 		});
 
-		showPartyButton.addEventListener("click", () => {
-			document.body.classList.add("show-party");
+		// Menu buttons
+		const menuId = localStorage.getItem("activeMenuId");
+
+		if (menuId) {
+			showMenu(menuId);
+		} else {
+			showMenu("home-menu");
+		}
+
+		// Menu buttons indicator should move on window resize and when menu is changed via other means (home buttons)
+
+		menuButtonsParent.addEventListener("click", (event) => {
+			let element = event.target;
+
+			if (element.tagName == "I")
+				element = element.parentElement;
+
+			if (element.classList.contains("icon-button")) {
+				showMenu(element.getAttribute("data-menu"));
+			}
 		});
 
-		showGamesButton.addEventListener("click", () => {
-			document.body.classList.remove("show-party");
+		// Home
+		joinPartyHomeButton.addEventListener("click", () => {
+			showModal(modals.JOIN_PARTY);
+		});
+		createPartyHomeButton.addEventListener("click", () => {
+			showMenu("party-menu");
+		});
+		browseGamesHomeButton.addEventListener("click", () => {
+			showMenu("games-menu");
+		});
+
+		window.addEventListener("resize", () => {
+			moveMenuButtonsIndicator();
 		});
 	}
 
 	firebase.auth().onAuthStateChanged((user) => {
 		if (user) {
 			// User logged in
+			if (debugMode)
+				console.log(`Logged in with user id: ${user.uid}`);
+
 			createUser(user.uid);
 		} else {
 			// User logged out

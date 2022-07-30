@@ -16,49 +16,74 @@
 	<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="show-party">
-	<div id="page-outer">
-		<h1>Party Animals</h1>
+	<div id="main">
+		<aside id="menu-buttons">
+			<div id="menu-buttons-inner">
+				<button class="icon-button" title="Home" data-menu="home-menu"><i class="fa-solid fa-house"></i></button>
+				<button class="icon-button" title="Games" data-menu="games-menu"><i class="fa-solid fa-gamepad"></i></button>
+				<button class="icon-button" title="Party" data-menu="party-menu"><i class="fa-solid fa-user-group"></i></button>
+				<button class="icon-button" title="Customization" data-menu="customization-menu"><i class="fa-solid fa-paintbrush"></i></button>
+				<div id="menu-buttons-indicator"></div>
+			</div>
+		</aside>
 
-		<div id="page-controls">
-			<button id="show-party" class="text-button">Party<i class="fa-solid fa-caret-right"></i></button>
-			<button id="show-games" class="text-button"><i class="fa-solid fa-caret-left"></i>Games</button>
-		</div>
+		<main>
+			<h1 id="title">Party Animals</h1>
 
-		<div id="page">
-			<!-- Games list -->
-			<main id="games-grid">
-				<div class="game highlight-top" data-game-title="slime">
-					<img class="game-thumbnail">
-					<h2 class="game-title">Slime</h2>
-				</div>
-			</main>
+			<div id="menus">
+				<!-- Home -->
+				<section id="home-menu">
+					<h1>Party Animals</h1>
+					<div id="home-buttons">
+						<button class="text-button" id="home-join-party">Join party</button>
+						<button class="text-button" id="home-create-party">Create party</button>
+						<div class="new-flex-row">
+							<button class="text-button" id="home-browse-games">Browse games</button>
+						</div>
+					</div>
+				</section>
 
-			<!-- Player list -->
-			<aside id="side-menu">
-				<div id="player-list" class="highlight-top">
-					<p id="party-name">Your party</p>
-					<div id="players"></div>
-					<div id="party-options">
-						<button id="invite-players" class="text-button">Invite players</button>
-						<button id="join-party" class="text-button">Join party</button>
-						<button id="leave-party" class="text-button">Leave party</button>
+				<!-- Games -->
+				<section id="games-menu">
+					<div id="games-grid">
+						<div class="game highlight-top" data-game-title="slime">
+							<img class="game-thumbnail">
+							<h2 class="game-title">Slime</h2>
+						</div>
 					</div>
-				</div>
-				<div id="player-settings">
-					<div id="character-preview">
-						<div id="character-preview-detail"></div>
+				</section>
+				
+				<!-- Party -->
+				<section id="party-menu">
+					<div id="player-list" class="highlight-top">
+						<p id="party-name">Your party</p>
+						<div id="players"></div>
+						<div id="party-options">
+							<button id="invite-players" class="text-button">Invite players</button>
+							<button id="join-party" class="text-button">Join party</button>
+							<button id="leave-party" class="text-button">Leave party</button>
+						</div>
 					</div>
-					<div id="player-options">
-						<span id="player-name-input">
-							<label for="player-name">Your name</label>
-							<input id="player-name" maxlength="16" type="text">
-						</span>
-						<button id="player-animal" class="text-button">Change animal</button>
-						<button id="player-color" class="text-button">Change color</button>
+				</section>
+
+				<!-- Customization -->
+				<section id="customization-menu">
+					<div id="player-settings">
+						<div id="character-preview">
+							<div id="character-preview-detail"></div>
+						</div>
+						<div id="player-options">
+							<span id="player-name-input">
+								<label for="player-name">Your name</label>
+								<input id="player-name" maxlength="16" type="text">
+							</span>
+							<button id="player-animal" class="text-button">Change animal</button>
+							<button id="player-color" class="text-button">Change color</button>
+						</div>
 					</div>
-				</div>
-			</aside>
-		</div>
+				</section>
+			</div>
+		</main>
 	</div>
 
 	<div id="modal">

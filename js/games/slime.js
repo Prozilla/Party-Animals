@@ -386,7 +386,7 @@ class Slime extends GameScene {
 	}
 }
 
-export function start(currentPlayers, playerId, currentHostId, currentPartyCode) {
+export function start(currentPlayers, playerId, currentHostId, currentPartyCode, debugMode) {
 	console.log("Starting slime");
 
 	members = JSON.parse(JSON.stringify(currentPlayers));
@@ -397,6 +397,9 @@ export function start(currentPlayers, playerId, currentHostId, currentPartyCode)
 	playerData = players[playerId];
 	hostId = currentHostId;
 	partyCode = currentPartyCode;
+
+	if (debugMode)
+		allowEndGame = false;
 
 	const config = {
 		type: Phaser.CANVAS,
