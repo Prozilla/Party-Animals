@@ -1,4 +1,4 @@
-![GitHub top language](https://img.shields.io/github/languages/top/Prozilla/Party-Animals?color=yellow) ![GitHub repo size](https://img.shields.io/github/repo-size/Prozilla/Party-Animals?color=green) ![Discord](https://img.shields.io/discord/574561977880281088?color=blue&label=Discord)
+![GitHub top language](https://img.shields.io/github/languages/top/Prozilla/Party-Animals?color=yellow) ![GitHub repo size](https://img.shields.io/github/repo-size/Prozilla/Party-Animals?color=green)
 
 <h1><img src="https://partyanimals.netlify.app/media/icons/Logo128x128.png" width="48" height="48"> Party Animals</h1>
 
