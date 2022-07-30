@@ -164,7 +164,7 @@ body::-webkit-scrollbar-thumb, #chat-messages::-webkit-scrollbar-thumb, section:
 
 /* Menus */
 #menu-buttons {
-	width: 45px;
+	width: var(--menu-buttons-width);
 	background-color: var(--background-color-b);
 	border-top-right-radius: var(--border-radius-full);
 	border-bottom-right-radius: var(--border-radius-full);
@@ -283,7 +283,6 @@ body > canvas {
 	display: flex;
 	flex-wrap: wrap;
 	align-content: flex-start;
-	flex-grow: 2;
 }
 
 #games-grid .game {
@@ -316,6 +315,7 @@ body > canvas {
 	display: flex;
 	gap: 10px;
 	flex-direction: column;
+	width: fit-content;
 	padding: 20px;
 	background-color: var(--background-color-b);
 	border-radius: var(--border-radius-a);
@@ -470,7 +470,8 @@ body > canvas {
 }
 
 #player-options button, #party-options button {
-	width: calc(50% - 5px);
+	flex-basis: calc(50% - 5px);
+	height: fit-content;
 }
 
 /* Party options */
@@ -488,6 +489,8 @@ body > canvas {
 	display: flex;
 	gap: 10px;
 	margin-top: 15px;
+	align-items: center;
+    justify-content: center;
 }
 
 #party-options #leave-party {
@@ -682,10 +685,6 @@ body > canvas {
 }
 
 /* Responsiveness */
-#page-controls {
-	display: none;
-}
-
 @media screen and (max-width: 600px) {
 	body {
 		padding-right: 0;
@@ -711,6 +710,12 @@ body > canvas {
 		box-sizing: border-box;
 	}
 
+	/* Player options */
+	#player-options #player-name-input {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
 	/* Modal */
 	#modal #modal-inner {
 		margin: 0 20px;
@@ -723,5 +728,18 @@ body > canvas {
 		right: var(--margin);
 		width: calc(100% - calc(var(--margin) * 2));
 		box-sizing: border-box;
+	}
+}
+
+@media screen and (min-width: 1500px) {
+	.game {
+		flex-basis: 33% !important;
+	}
+}
+
+@media screen and (min-height: 1000px) {
+	#menu-buttons #menu-buttons-inner {
+		gap: 150px;
+		justify-content: center;
 	}
 }

@@ -57,7 +57,7 @@ const modals = {
 			<label for="party-code">Enter a party code</label>
 			<input id="party-code" maxlength="6" type="text">
 		</span>`),
-	"INVITE_PLAYERS": new Modal("Invite players", `<p>Your party code: <strong>[PARTY_CODE]</strong></p>`),
+	"INVITE_PLAYERS": new Modal("Invite players", `<p>Party code: <strong>[PARTY_CODE]</strong></p><p>Party link: <strong>[PARTY_LINK]</strong></p>`),
 	"EMPTY_PARTY": new Modal("You can't leave yourself", `<p>You are already in an empty party!</p>`),
 	"NEED_MORE_PLAYERS": new Modal("You need more players", `<p>You can't launch a game by yourself. Invite more players to start playing.</p>`),
 	"NOT_HOST": new Modal("You are not the party host", `<p>Only the party host can launch a game.</p>`),
@@ -120,8 +120,6 @@ function toggleClass(element, active, className) {
 		element.classList.remove(className);
 	}
 }
-
-const parameters = getURLParameters();
 
 (function init() {
 
@@ -282,12 +280,16 @@ const parameters = getURLParameters();
 		games[name].start(players, playerId, party.host, partyCode, debugMode);
 	}
 
+	function getPartyInviteLink() {
+		return `${window.location.href}?invite=${partyCode}`;
+	}
+
 	function showModal(modalContent) {
 		const title = modalContent.title;
-		const html = modalContent.body;
-		html.replace("[PARTY_CODE]", partyCode);
+		const html = modalContent.body.replace("[PARTY_CODE]", partyCode).replace("[PARTY_LINK]", getPartyInviteLink());
 
-		console.log(`Showing "${title}" modal`);
+		if (debugMode)
+			console.log(`Showing "${title}" modal`);
 
 		modal.querySelector("#modal-title").childNodes[0].textContent = title;
 		modal.querySelector("#modal-body").innerHTML = html;
@@ -305,6 +307,12 @@ const parameters = getURLParameters();
 		modal.classList.remove("active");
 	}
 
+	function setPartyReferences(code) {
+		partyRef = firebase.database().ref(`parties/${code}`);
+		partyMembersRef = partyRef.child("members");
+		chatMessagesRef = partyRef.child("chat");
+	}
+
 	function createParty() {
 		const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 		let code = "";
@@ -315,38 +323,72 @@ const parameters = getURLParameters();
 		}
 		
 		partyCode = code;
-		partyRef = firebase.database().ref(`parties/${partyCode}`);
+		setPartyReferences(partyCode);
 
 		if (debugMode)
 			console.log("Created party with code: " + partyCode);
 
+		// Populate party
+		party.host = playerId;
+
 		partyRef.set({
 			code: partyCode,
 			isPublic: true,
+			members: players,
+			host: playerId,
 		});
 
 		clearChat();
-
-		partyMembersRef = firebase.database().ref(`parties/${partyCode}/members`);
-		chatMessagesRef = firebase.database().ref(`parties/${partyCode}/chat`);
 		initParty();
-	
 		partyRef.onDisconnect().remove();
 	}
+
+	function joinParty(code) {
+		firebase.database().ref(`parties/${partyCode}/code`).once("value", snapshot => {
+			if (snapshot.exists()) {
+				const code = snapshot.val();
+				const player = players[playerId];
+
+				if (debugMode)
+					console.log("Joined party with code: " + code);
+
+				if (partyMembersRef) {
+					// Leave old party
+					partyMembersRef.child(playerId).remove();
+
+					if (party.host == playerId)
+						partyMembersRef.parent.remove(); // TO DO: This deletes the party, which should be changed to only happen when the party is empty and otherwise assign a new host
+				}
+
+				// Update party variables
+				partyCode = code;
+				party.host = null;
+				setPartyReferences(partyCode);
+
+				// Join new party
+				partyMembersRef.child(playerId).set(player);
+				partyMembersRef.child(playerId).onDisconnect().remove();
+
+				// Show new party
+				initParty();
+
+				// Update chat
+				clearChat();
+				showChatMessage(player.name, player.color, "has joined the party.", false);
+			} else {
+				createParty();
+			}
+		});
+	}
 	
-	function createUser(id) {
-		playerId = id;
-
-		createParty();
-
+	function createUser() {
 		const animal = randomFromArray(animals);
 		const name = createName(animal);
 		const color = randomFromArray(colors);
 
 		playerNameInput.value = name;
 
-		const partyMembers = {};
-		partyMembers[playerId.toString()] = {
+		players[playerId] = {
 			id: playerId,
 			name: name,
 			animal: animal,
@@ -354,25 +396,24 @@ const parameters = getURLParameters();
 			score: 0,
 		}
 
-		// Populate party
-		const partyHost = playerId;
-		party.host = playerId;
+		initUser();
+	}
 
-		partyRef.update({
-			members: partyMembers,
-			host: partyHost,
-		});
+	function initUser() {
+		if (partyRef) {
+			playerRef = partyMembersRef.child(playerId);
+			playerRef.onDisconnect().remove();
 
-		playerRef = firebase.database().ref(`parties/${partyCode}/members/${playerId}`);
-		playerRef.onDisconnect().remove();
-
-		loadPlayerData();
-		initInterface();
+			loadPlayerData();
+			initInterface();
+		} else {
+			setTimeout(initUser, 50);
+		}
 	}
 
 	function updatePartyName() {
 		const hostId = party.host;
-		const hostRef = firebase.database().ref(`parties/${partyCode}/members/${hostId}`);
+		const hostRef = partyMembersRef.child(hostId);
 
 		hostRef.on("value", (snapshot) => {
 			const host = snapshot.val();
@@ -383,8 +424,7 @@ const parameters = getURLParameters();
 
 
 	function initParty() {
-		partyRef = firebase.database().ref(`parties/${partyCode}`);
-		playerRef = partyRef.child("members").child(playerId);
+		playerRef = partyMembersRef.child(playerId);
 
 		partyRef.on("value", (snapshot) => {
 			const newParty = snapshot.val();
@@ -403,51 +443,54 @@ const parameters = getURLParameters();
 		// Fires whenever the data of any player changes
 		partyMembersRef.on("value", (snapshot) => {
 			players = snapshot.val() || {};
+
 			Object.keys(players).forEach((key) => {
 				const playerState = players[key];
 				const element = playerElements[key];
 
-				element.querySelector(".name").innerText = playerState.name;
-				element.querySelector(".score").innerText = `Score: ${playerState.score}`;
+				if (element) {
+					element.querySelector(".name").innerText = playerState.name;
+					element.querySelector(".score").innerText = `Score: ${playerState.score}`;
 
-				const character = element.querySelector(".character");
+					const character = element.querySelector(".character");
 
-				// Update color
-				if (!character.classList.contains(playerState.color.toLowerCase())) {
-					// Remove previous color
-					colors.forEach(color => {
-						color = color.toLowerCase();
-						if (character.classList.contains(color)) {
-							character.classList.remove(color);
+					// Update color
+					if (!character.classList.contains(playerState.color.toLowerCase())) {
+						// Remove previous color
+						colors.forEach(color => {
+							color = color.toLowerCase();
+							if (character.classList.contains(color)) {
+								character.classList.remove(color);
 
-							if (playerState.id == playerId)
-								characterPreview.classList.remove(color);
-						}
-					});
+								if (playerState.id == playerId)
+									characterPreview.classList.remove(color);
+							}
+						});
 
-					// Add new color
-					character.classList.add(playerState.color.toLowerCase());
-					if (playerState.id == playerId)
-						characterPreview.classList.add(playerState.color.toLowerCase());
-				}
+						// Add new color
+						character.classList.add(playerState.color.toLowerCase());
+						if (playerState.id == playerId)
+							characterPreview.classList.add(playerState.color.toLowerCase());
+					}
 
-				// Update animal
-				if (!character.classList.contains(playerState.animal.toLowerCase())) {
-					// Remove previous animal
-					animals.forEach(animal => {
-						animal = animal.toLowerCase();
-						if (character.classList.contains(animal)) {
-							character.classList.remove(animal);
+					// Update animal
+					if (!character.classList.contains(playerState.animal.toLowerCase())) {
+						// Remove previous animal
+						animals.forEach(animal => {
+							animal = animal.toLowerCase();
+							if (character.classList.contains(animal)) {
+								character.classList.remove(animal);
 
-							if (playerState.id == playerId)
-								characterPreview.classList.remove(animal);
-						}
-					});
+								if (playerState.id == playerId)
+									characterPreview.classList.remove(animal);
+							}
+						});
 
-					// Add new animal
-					character.classList.add(playerState.animal.toLowerCase());
-					if (playerState.id == playerId)
-						characterPreview.classList.add(playerState.animal.toLowerCase());
+						// Add new animal
+						character.classList.add(playerState.animal.toLowerCase());
+						if (playerState.id == playerId)
+							characterPreview.classList.add(playerState.animal.toLowerCase());
+					}
 				}
 			});
 		});
@@ -455,6 +498,9 @@ const parameters = getURLParameters();
 		// Fires whenever a new player joins
 		partyMembersRef.on("child_added", (snapshot) => {
 			const newPlayer = snapshot.val();
+
+			if (!newPlayer.id)
+				return;
 
 			if (debugMode)
 				console.log("Player joined: " + newPlayer.id);
@@ -547,33 +593,15 @@ const parameters = getURLParameters();
 			partyCodeInput.addEventListener("keypress", (event) => {
 				// TO DO: Should show modal to user when they try to join their own party
 				if (event.key == "Enter" && partyCodeInput.value.length == 6 && partyCodeInput.value.toUpperCase() != partyCode) {
-					closeModal();
+					firebase.database().ref(`parties/${partyCode}/code`).once("value", snapshot => {
+						if (snapshot.exists()) {
+							closeModal();
+							partyCodeInput.removeEventListener("keypress", this);
 
-					partyCodeInput.removeEventListener("keypress", this);
-
-					const code = partyCodeInput.value.toUpperCase();
-					const player = players[playerId];
-		
-					// Leave old party
-					partyMembersRef.child(playerId).remove();
-					partyMembersRef.parent.remove(); // TO DO: This deletes the party, which should be changed to only happen when the party is empty and otherwise assign a new host
-
-					// Update party variables
-					partyCode = code;
-					party.host = null;
-					partyMembersRef = firebase.database().ref(`parties/${code}/members`);;
-					chatMessagesRef = firebase.database().ref(`parties/${partyCode}/chat`);
-		
-					// Join new party
-					partyMembersRef.child(playerId).set(player);
-					partyMembersRef.child(playerId).onDisconnect().remove();
-		
-					// Show new party
-					initParty();
-
-					// Update chat
-					clearChat();
-					showChatMessage(player.name, player.color, "has joined the party.", false);
+							const code = partyCodeInput.value.toUpperCase();
+							joinParty(code);
+						}
+					});
 				}
 			});
 		});
@@ -704,11 +732,22 @@ const parameters = getURLParameters();
 
 	firebase.auth().onAuthStateChanged((user) => {
 		if (user) {
+			playerId = user.uid;
+
 			// User logged in
 			if (debugMode)
-				console.log(`Logged in with user id: ${user.uid}`);
+				console.log(`Logged in with user id: ${playerId}`);
 
-			createUser(user.uid);
+			const parameters = getURLParameters();
+			partyCode = parameters ? parameters["invite"] : null;
+
+			createUser(playerId);
+	
+			if (partyCode) {
+				joinParty(partyCode);
+			} else {
+				createParty();
+			}
 		} else {
 			// User logged out
 		}
