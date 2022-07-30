@@ -1,3 +1,5 @@
+![GitHub top language](https://img.shields.io/github/languages/top/Prozilla/Party-Animals?color=yellow) ![GitHub repo size](https://img.shields.io/github/repo-size/Prozilla/Party-Animals?color=green) ![Discord](https://img.shields.io/discord/574561977880281088?color=blue&label=Discord)
+
 <h1><img src="https://partyanimals.netlify.app/media/icons/Logo128x128.png" width="48" height="48"> Party Animals</h1>
 
 [Party Animals](https://partyanimals.netlify.app/) is a platform for multiplayer party games where you can invite your friends and play games quickly and easily. This was made by Prozilla by using a realtime database provided by Firebase and the game engine Phaser.
