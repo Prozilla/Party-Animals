@@ -57,7 +57,12 @@ const modals = {
 			<label for="party-code">Enter a party code</label>
 			<input id="party-code" maxlength="6" type="text">
 		</span>`),
-	"INVITE_PLAYERS": new Modal("Invite players", `<p>Party code: <strong>[PARTY_CODE]</strong></p><p>Party link: <strong>[PARTY_LINK]</strong></p>`),
+	"INVITE_PLAYERS": new Modal("Invite players", `
+		<p><strong id="party-code">[PARTY_CODE]</strong></p>
+		<div id="invite-buttons">
+			<button class="text-button" id="copy-invite-code">Copy invite code</button>
+			<button class="text-button" id="copy-invite-link">Copy invite link</button>
+		</div>`),
 	"EMPTY_PARTY": new Modal("You can't leave yourself", `<p>You are already in an empty party!</p>`),
 	"NEED_MORE_PLAYERS": new Modal("You need more players", `<p>You can't launch a game by yourself. Invite more players to start playing.</p>`),
 	"NOT_HOST": new Modal("You are not the party host", `<p>Only the party host can launch a game.</p>`),
@@ -150,6 +155,8 @@ function toggleClass(element, active, className) {
 
 	// Modal
 	const modal = document.querySelector("#modal");
+	const modalTitle = modal.querySelector("#modal-title").childNodes[0];
+	const modalBody = modal.querySelector("#modal-body");
 	let allowClickingModalAway = true;
 
 	// Chat
@@ -284,15 +291,71 @@ function toggleClass(element, active, className) {
 		return `${window.location.href}?invite=${partyCode}`;
 	}
 
+	function setClipboard(text) {
+		navigator.clipboard.writeText(text);
+	}
+
+	function handleModalClick(event) {
+		const element = event.target;
+
+		switch (element.id) {
+			case "party-code":
+			case "copy-invite-code":
+				setClipboard(partyCode);
+				break;
+			case "copy-invite-link":
+				setClipboard(getPartyInviteLink());
+				break;
+		}
+	}
+
 	function showModal(modalContent) {
-		const title = modalContent.title;
 		const html = modalContent.body.replace("[PARTY_CODE]", partyCode).replace("[PARTY_LINK]", getPartyInviteLink());
 
-		if (debugMode)
-			console.log(`Showing "${title}" modal`);
+		let modalKey;
+		for (const [key, value] of Object.entries(modals)) {
+			if (value == modalContent) {
+				modalKey = key
+			}
+		}
 
-		modal.querySelector("#modal-title").childNodes[0].textContent = title;
-		modal.querySelector("#modal-body").innerHTML = html;
+		modal.setAttribute("data-modal-key", modalKey);
+
+		if (debugMode)
+			console.log(`Showing "${modalKey}" modal`);
+
+		modalTitle.textContent = modalContent.title;
+		modalBody.innerHTML = html;
+
+		if (modalKey == "JOIN_PARTY") {
+			const partyCodeInput = modal.querySelector("#party-code");
+
+			// Remove spaces from party code input field
+			partyCodeInput.addEventListener("input", () => {
+				partyCodeInput.value = partyCodeInput.value.split(" ").join("");
+			});
+
+			function processPartyCodeKeyPress(event) {
+				// TO DO: Should show modal to user when they try to join their own party
+				if (event.key == "Enter" && partyCodeInput.value.length == 6 && partyCodeInput.value.toUpperCase() != partyCode) {
+					firebase.database().ref(`parties/${partyCode}/code`).once("value", snapshot => {
+						if (snapshot.exists()) {
+							closeModal();
+							partyCodeInput.removeEventListener("keypress", processPartyCodeKeyPress);
+
+							const code = partyCodeInput.value.toUpperCase();
+							joinParty(code);
+						}
+					});
+				}
+			}
+
+			// Listen for enter key press
+			partyCodeInput.addEventListener("keypress", processPartyCodeKeyPress);
+		} else if (modalKey == "INVITE_PLAYERS") {
+			modalBody.addEventListener("click", handleModalClick);
+		}
+
 		modal.classList.add("active");
 
 		// This delay is required because without it, any button click that opens the modal will also immediately close it 
@@ -305,6 +368,8 @@ function toggleClass(element, active, className) {
 
 	function closeModal() {
 		modal.classList.remove("active");
+
+		modalBody.removeEventListener("click", handleModalClick);
 	}
 
 	function setPartyReferences(code) {
@@ -581,29 +646,6 @@ function toggleClass(element, active, className) {
 		// Party options
 		joinPartyButton.addEventListener("click", () => {
 			showModal(modals.JOIN_PARTY);
-
-			const partyCodeInput = modal.querySelector("#party-code");
-
-			// Remove spaces from party code input field
-			partyCodeInput.addEventListener("input", () => {
-				partyCodeInput.value = partyCodeInput.value.split(" ").join("");
-			});
-
-			// Listen for enter key press
-			partyCodeInput.addEventListener("keypress", (event) => {
-				// TO DO: Should show modal to user when they try to join their own party
-				if (event.key == "Enter" && partyCodeInput.value.length == 6 && partyCodeInput.value.toUpperCase() != partyCode) {
-					firebase.database().ref(`parties/${partyCode}/code`).once("value", snapshot => {
-						if (snapshot.exists()) {
-							closeModal();
-							partyCodeInput.removeEventListener("keypress", this);
-
-							const code = partyCodeInput.value.toUpperCase();
-							joinParty(code);
-						}
-					});
-				}
-			});
 		});
 
 		leavePartyButton.addEventListener("click", () => {

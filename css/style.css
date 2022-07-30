@@ -51,7 +51,7 @@ h1 {
 	font-weight: 400;
 }
 
-button, .game, #title, #home-menu h1 {
+button, .game, #title, #home-menu h1, #modal[data-modal-key="INVITE_PLAYERS"] p strong {
 	-webkit-tap-highlight-color: transparent;
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
@@ -74,6 +74,11 @@ input {
 ::selection {
 	color: var(--text-color-b);
 	background-color: var(--yellow-a);
+}
+
+strong {
+	font-family: var(--title-font);
+    font-weight: 400;
 }
 
 body #main {
@@ -562,6 +567,24 @@ body > canvas {
 
 #modal #modal-inner #modal-body > * {
 	margin: 0;
+}
+
+#modal[data-modal-key="INVITE_PLAYERS"] p {
+	display: flex;
+	justify-content: center;
+	margin-bottom: 10px !important;
+    font-size: 2rem;
+}
+
+#modal[data-modal-key="INVITE_PLAYERS"] p #party-code {
+	cursor: pointer;
+}
+
+#modal[data-modal-key="INVITE_PLAYERS"] #invite-buttons {
+	display: flex;
+	gap: 10px;
+	justify-content: center;
+    align-items: center;
 }
 
 /* Chat */
