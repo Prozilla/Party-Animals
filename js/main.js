@@ -111,6 +111,9 @@ function getURLParameters() {
 }
 
 function moveElementToElement(element, target) {
+	if (!element || !target)
+		return;
+
 	const rect = target.getBoundingClientRect();
 
 	element.style.left = `${(rect.left + rect.right) / 2}px`;

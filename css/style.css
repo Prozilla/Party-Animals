@@ -28,7 +28,7 @@
 	--title-font: "Fredoka One", cursive;
 	--body-font: "Fredoka", sand-serif;
 
-	--menu-buttons-width: 45px;
+	--menu-buttons-width: 35px;
 	--menu-buttons-margin: 50px;
 }
 
@@ -83,7 +83,7 @@ strong {
 
 body #main {
 	display: flex;
-    gap: 50px;
+    gap: var(--menu-buttons-margin);
 	width: 100%;
 	height: 100%;
 	overflow: hidden;
@@ -182,7 +182,7 @@ body::-webkit-scrollbar-thumb, #chat-messages::-webkit-scrollbar-thumb, section:
 	display: flex;
 	flex-direction: column;
 	justify-content: space-evenly;
-	width: 100%;
+	width: var(--menu-buttons-width);
 	height: 100%;
 	padding: var(--padding) 0;
     box-sizing: border-box;
@@ -709,6 +709,10 @@ body > canvas {
 
 /* Responsiveness */
 @media screen and (max-width: 600px) {
+	:root {
+		--menu-buttons-margin: 30px;
+	}
+
 	body {
 		padding-right: 0;
 		padding-left: 0;
@@ -746,15 +750,17 @@ body > canvas {
 
 	/* Chat */
 	#chat {
-		--margin: 50px;
-		left: var(--margin);
-		right: var(--margin);
-		width: calc(100% - calc(var(--margin) * 2));
+		right: calc(var(--menu-buttons-width) + var(--menu-buttons-margin));
+		width: auto;
 		box-sizing: border-box;
 	}
 }
 
 @media screen and (min-width: 1500px) {
+	:root {
+		--menu-buttons-width: 45px;
+	}
+
 	.game {
 		flex-basis: 33% !important;
 	}
