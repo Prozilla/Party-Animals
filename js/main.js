@@ -210,13 +210,24 @@ function toggleClass(element, active, className) {
 	}
 
 	function sendChatMessage(text) {
-		if (chatInput.value.trim().length == 0)
+		if (text.trim().length == 0)
 			return;
+
+		// Remove links from message
+		const matches = text.match(/(?:(?:https?|ftp):\/\/)[\w\/\-?=%.]+\.[\w\/\-&?=%.]+/g);
+
+		if (matches) {
+			matches.forEach((match) => {
+				let domain = new URL(match).hostname.replace("www.", "");
+
+				if (domain != window.location.hostname)
+					text = text.replaceAll(match, "[Link removed]");
+			});
+		}
 
 		chatInput.value = "";
 
 		const time = Date.now();
-
 		const chatMessageRef = chatMessagesRef.child(time);
 
 		chatMessageRef.set({
