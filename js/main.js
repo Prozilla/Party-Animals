@@ -185,6 +185,9 @@ function toggleClass(element, active, className) {
 	const browseGamesHomeButton = document.querySelector("#home-browse-games");
 	let activeMenuId;
 
+	// Loading screen
+	const loadingScreen = document.querySelector("#loading-screen");
+
 	function moveMenuButtonsIndicator() {
 		const menuButton = menuButtonsParent.querySelector(`button[data-menu="${activeMenuId}"]`);
 		moveElementToElement(menuButtonsIndicator, menuButton);
@@ -615,6 +618,8 @@ function toggleClass(element, active, className) {
 	}
 
 	function initInterface() {
+		loadingScreen.classList.remove("active");
+
 		// Player options
 		playerNameInput.addEventListener("change", (event) => {
 			const newName = event.target.value || createName(players[playerId].animal);
