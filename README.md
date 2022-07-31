@@ -35,3 +35,4 @@ Screenshot of Party Animals' home page:<br>
 - [ ] Chat filter (remove all links except party animals links)
 - [ ] Loading screen
 - [x] Tabs (buttons on the left side of the screen, bottom on mobile) to switch between menus like games, party, player customisation, help and start menu
+- [ ] Force all game canvases to be the same size and prevent browser zoom
