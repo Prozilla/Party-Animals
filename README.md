@@ -29,10 +29,10 @@ Screenshot of Party Animals' home page:<br>
 - [ ] Synchronisation (wait for all players before starting game
 - [ ] Countdown before starting game
 - [ ] Party king (player with most points)
-- [ ] Invite links
+- [x] Invite links
 - [x] Start screen
 - [ ] Spectator mode
-- [ ] Chat filter (remove all links except party animals links)
+- [x] Chat filter (remove all links except party animals links)
 - [x] Loading screen
 - [x] Tabs (buttons on the left side of the screen, bottom on mobile) to switch between menus like games, party, player customisation, help and start menu
 - [ ] Force all game canvases to be the same size and prevent browser zoom
