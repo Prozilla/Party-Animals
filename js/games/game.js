@@ -73,6 +73,10 @@ export class Util {
 	}
 }
 
+export class Player {
+	
+}
+
 export class GameScene extends Phaser.Scene {
 
 }

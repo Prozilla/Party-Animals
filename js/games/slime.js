@@ -318,7 +318,9 @@ class Slime extends GameScene {
 			const distance = util.calculateDistance(playerData, {x: worldMouseX, y: worldMouseY});
 			let factor = util.clampValue(screen.width > screen.height ? distance / (screen.height / 4) : distance / (screen.width / 4), 0, 1);
 
-			const speed = (playerData.score - startingScore) * speedIncrease + startingSpeed;
+			const a = 250;
+			const b = a / 3 + 40;
+			const speed =  a / (playerData.score - startingScore + b);
 
 			const newPosition = util.moveTowards(playerData.x, playerData.y, worldMouseX, worldMouseY, factor * speed);
 
@@ -398,8 +400,16 @@ export function start(currentPlayers, playerId, currentHostId, currentPartyCode,
 	hostId = currentHostId;
 	partyCode = currentPartyCode;
 
-	if (debugMode)
+	if (debugMode) {
 		allowEndGame = false;
+
+		window.addEventListener("keypress", (event) => {
+			console.log(event.key);
+			if (event.key == "e") {
+				addScore(5);
+			}
+		});
+	}
 
 	const config = {
 		type: Phaser.CANVAS,

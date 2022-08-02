@@ -362,6 +362,7 @@ function toggleClass(element, active, className) {
 
 							const code = partyCodeInput.value.toUpperCase();
 							joinParty(code);
+							showMenu("party-menu");
 						}
 					});
 				}

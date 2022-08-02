@@ -313,6 +313,7 @@ body > canvas {
 	border-radius: var(--border-radius-a);
 	aspect-ratio: 1;
 	box-sizing: border-box;
+	object-fit: cover;
 }
 
 .game .game-title {
