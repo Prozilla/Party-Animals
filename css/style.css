@@ -1,8 +1,8 @@
 :root {
 	--background-color-a: hsl(283, 39%, 53%);
 	--background-color-b: hsl(282, 44%, 47%);
-	--background-color-c: #944EB2;
 	--background-color-d: hsl(282, 49%, 41%);
+	--background-color-d: hsl(283, 42%, 52%);
 	--text-color-a: white;
 	--text-color-b: black;
 	--text-color-c: lightgrey;
@@ -44,6 +44,24 @@ body {
 	color: var(--text-color-a);
 	font-family: var(--body-font);
 	box-sizing: border-box;
+	z-index: -2;
+}
+
+body:after {
+	--scale: 300px;
+
+	content: "";
+	position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+	mask: url("../media/backgroundPattern.svg") repeat center;
+		-webkit-mask: url("../media/backgroundPattern.svg") repeat center;
+	mask-size: var(--scale);
+		-webkit-mask-size: var(--scale);
+	background-color: var(--background-color-d);
+	z-index: -1;
 }
 
 h1, h2 {
@@ -802,6 +820,10 @@ body > canvas {
 		padding-right: 0;
 		padding-left: 0;
 		width: 100%;
+	}
+
+	body:after {
+		--scale: 200px;
 	}
 
 	/* Home */
