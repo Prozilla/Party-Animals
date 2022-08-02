@@ -147,6 +147,7 @@ function toggleClass(element, active, className) {
 	let partyRef;
 	let partyCode;
 	let partyMembersRef;
+	let lastLeftParty;
 
 	// Player options
 	const playerNameInput = document.querySelector("#player-name");
@@ -464,7 +465,7 @@ function toggleClass(element, active, className) {
 	}
 
 	function joinParty(code) {
-		firebase.database().ref(`parties/${partyCode}/code`).once("value", snapshot => {
+		firebase.database().ref(`parties/${code}/code`).once("value", snapshot => {
 			if (snapshot.exists()) {
 				const code = snapshot.val();
 				const player = players[playerId];
@@ -474,6 +475,7 @@ function toggleClass(element, active, className) {
 
 				if (partyMembersRef) {
 					// Leave old party
+					lastLeftParty = partyCode;
 					partyMembersRef.child(playerId).remove();
 
 					if (party.host == playerId)
@@ -532,6 +534,9 @@ function toggleClass(element, active, className) {
 	}
 
 	function updatePartyName() {
+		if (!party.host)
+			return;
+
 		const hostId = party.host;
 		const hostRef = partyMembersRef.child(hostId);
 
@@ -652,7 +657,8 @@ function toggleClass(element, active, className) {
 			if (debugMode)
 				console.log("Player left: " + removedKey);
 
-			if (removedKey == playerId) {
+			console.log(lastLeftParty);
+			if (removedKey == playerId && lastLeftParty != partyCode) {
 				console.log("Lost connection to party with code: " + partyCode);
 				lostConnectionScreen.classList.add("active");
 			}
@@ -723,6 +729,7 @@ function toggleClass(element, active, className) {
 				return showModal(modals.EMPTY_PARTY);
 
 			// Leave old party
+			lastLeftParty = partyCode;
 			partyMembersRef.child(playerId).remove();
 
 			// Remove old party
@@ -838,7 +845,7 @@ function toggleClass(element, active, className) {
 
 		// Lost connection screen
 		reconnectButton.addEventListener("click", () => {
-			logIn();
+			location.reload();
 		});
 		
 	}
@@ -871,7 +878,7 @@ function toggleClass(element, active, className) {
 	function logIn() {
 		if (debugMode)
 			console.log("Logging in...");
-			
+
 		firebase.auth().signInAnonymously().catch((error) => {
 			console.log(error.code, error.message);
 		});
