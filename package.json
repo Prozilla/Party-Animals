@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "webfontloader": "^1.6.28"
+  },
+  "devDependencies": {
+    "eslint": "^8.21.0"
   }
 }

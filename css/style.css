@@ -46,13 +46,9 @@ body {
 	box-sizing: border-box;
 }
 
-h1 {
+h1, h2 {
 	font-family: var(--title-font);
 	font-weight: 400;
-}
-
-h2 {
-	font-family: var(--title-font);
 }
 
 button, .game, #title, #home-menu h1, #modal[data-modal-key="INVITE_PLAYERS"] p strong {

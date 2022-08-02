@@ -26,12 +26,12 @@ const animals = [
 	"Dog",
 	"Bear",
 	"Spider",
+	"Sheep",
 	// "Fish",
 	// "Lion",
 	// "Wolf",
 	// "Chicken",
 	// "Horse",
-	"Sheep",
 ];
 
 const colors = [
@@ -41,7 +41,7 @@ const colors = [
 	"Green",
 	"Blue",
 	"Purple",
-	"Pink"
+	"Pink",
 ];
 
 class Modal {
@@ -74,21 +74,25 @@ function randomFromArray(array) {
 
 function createName(animal) {
 	const prefix = randomFromArray([
+		// Alphabetical order
+		"Big",
+		"Buff",
 		"Cool",
+		"Dark",
+		"Eternal",
+		"Evil",
+		"Floaty",
+		"Friendly",
+		"Long",
+		"Radioactive",
+		"Rich",
+		"Silky",
+		"Small",
+		"Smart",
+		"Smug",
+		"Soft",
 		"Super",
 		"Ultra",
-		"Smart",
-		"Big",
-		"Radioactive",
-		"Smug",
-		"Eternal",
-		"Floaty",
-		"Silky",
-		"Rich",
-		"Dark",
-		"Long",
-		"Soft",
-		"Buff",
 	]);
 
 	return `${prefix} ${animal}`;
