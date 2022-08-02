@@ -150,6 +150,7 @@ function toggleClass(element, active, className) {
 
 	// Player options
 	const playerNameInput = document.querySelector("#player-name");
+	const randomizeNameButton = document.querySelector("#randomize-name");
 	const playerAnimalButton = document.querySelector("#player-animal");
 	const playerColorButton = document.querySelector("#player-color");
 	const characterPreview = document.querySelector("#character-preview");
@@ -564,7 +565,7 @@ function toggleClass(element, active, className) {
 				const element = playerElements[key];
 
 				if (element) {
-					element.querySelector(".name").innerText = playerState.name;
+					element.querySelector(".name").innerText = key != playerId ? playerState.name : `${playerState.name} (you)`;
 					element.querySelector(".score").innerText = `Score: ${playerState.score}`;
 
 					const character = element.querySelector(".character");
@@ -625,7 +626,7 @@ function toggleClass(element, active, className) {
 			newPlayerElement.innerHTML = `
 				<div class="character ${newPlayer.color.toLowerCase()} ${newPlayer.animal.toLowerCase()}"><div class="character-detail"></div></div>
 				<span>
-					<p class="name">${newPlayer.name}</p>
+					<p class="name">${newPlayer.id != playerId ? newPlayer.name : newPlayer.name + "(you)"}</p>
 					<p class="score">Score: ${newPlayer.score}</p>
 				</span>`;
 
@@ -667,6 +668,11 @@ function toggleClass(element, active, className) {
 		// Player options
 		playerNameInput.addEventListener("change", (event) => {
 			const newName = event.target.value || createName(players[playerId].animal);
+			setPlayerName(newName);
+		});
+
+		randomizeNameButton.addEventListener("click", () => {
+			const newName = createName(players[playerId].animal);
 			setPlayerName(newName);
 		});
 
