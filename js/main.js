@@ -205,10 +205,26 @@ function toggleClass(element, active, className) {
 		toggleClass(title, id == "home-menu", "hidden");
 
 		// Show the right menu and hide the others
-		for(let i = 0; i < menusParent.children.length; i++){
+		let menuIndex;
+		for (let i = 0; i < menusParent.children.length; i++) {
             const menu = menusParent.children[i];
 			toggleClass(menu, menu.id == id, "active");
+
+			if (menu.id == id)
+				menuIndex = i;
         }
+
+		// Add position classes
+		for (let i = 0; i < menusParent.children.length; i++) {
+			const menu = menusParent.children[i];
+			if (i < menuIndex) {
+				menu.classList.remove("below");
+				menu.classList.add("above");
+			} else if (i > menuIndex) {
+				menu.classList.remove("above");
+				menu.classList.add("below");
+			}
+		}
 
 		moveMenuButtonsIndicator();
 	}
