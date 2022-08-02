@@ -759,11 +759,6 @@ body > canvas {
 }
 
 /* Loading screen */
-#loading-screen:not(.active) {
-	display: none;
-	pointer-events: none;
-}
-
 #loading-screen {
 	position: fixed;
 	display: flex;
@@ -776,6 +771,11 @@ body > canvas {
 	height: 100%;
 	background-color: var(--background-color-a);
 	z-index: 300;
+}
+
+#loading-screen:not(.active) {
+	display: none;
+	pointer-events: none;
 }
 
 #loading-screen h2 {
@@ -800,8 +800,8 @@ body > canvas {
 	-webkit-transform: translateZ(0);
 	-ms-transform: translateZ(0);
 	transform: translateZ(0);
-	-webkit-animation: load8 1.1s infinite linear;
-	animation: load8 1.1s infinite linear;
+	-webkit-animation: spin 1.1s infinite linear;
+	animation: spin 1.1s infinite linear;
 }
 
 @-webkit-keyframes spin {
@@ -824,6 +824,30 @@ body > canvas {
 		-webkit-transform: rotate(360deg);
 		transform: rotate(360deg);
 	}
+}
+
+/* Lost connection screen */
+#lost-connection-screen {
+	position: fixed;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	background-color: var(--background-color-a);
+	z-index: 250;
+}
+
+#lost-connection-screen:not(.active) {
+	display: none;
+	pointer-events: none;
+}
+
+#lost-connection-screen h2 {
+	font-size: 3rem;
 }
 
 /* Responsiveness */

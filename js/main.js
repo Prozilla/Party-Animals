@@ -193,6 +193,10 @@ function toggleClass(element, active, className) {
 	// Loading screen
 	const loadingScreen = document.querySelector("#loading-screen");
 
+	// Lost connection screen
+	const lostConnectionScreen = document.querySelector("#lost-connection-screen");
+	const reconnectButton = document.querySelector("#reconnect");
+
 	function moveMenuButtonsIndicator() {
 		const menuButton = menuButtonsParent.querySelector(`button[data-menu="${activeMenuId}"]`);
 		moveElementToElement(menuButtonsIndicator, menuButton);
@@ -648,6 +652,11 @@ function toggleClass(element, active, className) {
 			if (debugMode)
 				console.log("Player left: " + removedKey);
 
+			if (removedKey == playerId) {
+				console.log("Lost connection to party with code: " + partyCode);
+				lostConnectionScreen.classList.add("active");
+			}
+
 			playerList.removeChild(playerElements[removedKey]);
 			delete playerElements[removedKey];
 
@@ -801,8 +810,6 @@ function toggleClass(element, active, className) {
 			showMenu("home-menu");
 		}
 
-		// Menu buttons indicator should move on window resize and when menu is changed via other means (home buttons)
-
 		menuButtonsParent.addEventListener("click", (event) => {
 			let element = event.target;
 
@@ -828,6 +835,12 @@ function toggleClass(element, active, className) {
 		window.addEventListener("resize", () => {
 			moveMenuButtonsIndicator();
 		});
+
+		// Lost connection screen
+		reconnectButton.addEventListener("click", () => {
+			logIn();
+		});
+		
 	}
 
 	firebase.auth().onAuthStateChanged((user) => {
@@ -850,12 +863,20 @@ function toggleClass(element, active, className) {
 			}
 		} else {
 			// User logged out
+			if (debugMode)
+				console.log("User logged out");
 		}
 	});
 
-	// Login event
-	firebase.auth().signInAnonymously().catch((error) => {
-		console.log(error.code, error.message);
-	});
+	function logIn() {
+		if (debugMode)
+			console.log("Logging in...");
+			
+		firebase.auth().signInAnonymously().catch((error) => {
+			console.log(error.code, error.message);
+		});
+	}
+
+	logIn();
 
 })();
