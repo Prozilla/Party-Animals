@@ -204,6 +204,18 @@ function toggleClass(element, active, className) {
 		// Hide title when home menu is activated
 		toggleClass(title, id == "home-menu", "hidden");
 
+		switch (id) {
+			case "games-menu":
+				title.textContent = party.host == playerId ? "Choose a game to play" : "Games"
+				break;
+			case "party-menu":
+				title.textContent = "Party"
+					break;
+			case "customization-menu":
+				title.textContent = "Player customization"
+				break;
+		}
+
 		// Show the right menu and hide the others
 		let menuIndex;
 		for (let i = 0; i < menusParent.children.length; i++) {

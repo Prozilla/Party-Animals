@@ -210,7 +210,6 @@ body::-webkit-scrollbar-thumb, #chat-messages::-webkit-scrollbar-thumb, section:
 	position: relative;
 }
 
-/* TO DO: make menus move up and down when switched between */
 #menus > section {
 	position: absolute;
 	top: 0;
@@ -243,6 +242,11 @@ body::-webkit-scrollbar-thumb, #chat-messages::-webkit-scrollbar-thumb, section:
 
 #menus > section#customization-menu {
 	overflow-y: visible;
+}
+
+#title {
+	transition: opacity 200ms ease-in-out;
+	-webkit-transition: opacity 200ms ease-in-out;
 }
 
 #title.hidden {
@@ -309,7 +313,7 @@ body > canvas {
 	align-items: center;
 	flex-direction: column;
 	padding: 20px;
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 1;
 	background-color: var(--background-color-b);
 	border-radius: var(--border-radius-a);
 	cursor: pointer;
@@ -352,7 +356,7 @@ body > canvas {
 
 .player {
 	display: flex;
-	gap: 10px;
+	gap: 15px;
 	padding: 10px;
 	color: var(--text-color-b);
 	background-color: var(--text-color-a);
