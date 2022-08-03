@@ -93,7 +93,7 @@ h1, h2 {
 	font-weight: 400;
 }
 
-button, .game, #title, #home-menu h1, #modal[data-modal-key="INVITE_PLAYERS"] p strong {
+button, .game, #title, #home-menu h1, #modal[data-modal-key="INVITE_PLAYERS"] p strong, #home-menu #credits {
 	-webkit-tap-highlight-color: transparent;
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
@@ -299,7 +299,7 @@ body::-webkit-scrollbar-thumb, #chat-messages::-webkit-scrollbar-thumb, section:
 /* Home */
 #home-menu {
 	display: flex;
-	gap: 50px;
+	gap: 60px;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
@@ -308,8 +308,38 @@ body::-webkit-scrollbar-thumb, #chat-messages::-webkit-scrollbar-thumb, section:
 }
 
 #home-menu h1 {
-	margin-top: 0;
+	margin: 0;
 	font-size: 7.5vw;
+}
+
+#home-menu #credits {
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	margin-top: -45px;
+	color: var(--text-color-a);
+	text-decoration: none;
+	cursor: pointer;
+}
+
+#home-menu #credits h2 {
+	margin: 0;
+}
+
+#home-menu #credits div:hover {
+    animation-play-state: running;
+}
+
+#home-menu #credits div {
+	height: 2rem;
+	aspect-ratio: 1;
+    animation: spin 10000ms paused linear infinite;
+}
+
+#home-menu #credits img {
+	width: 100%;
+	height: 100%;
+	animation: spin 25000ms linear infinite;
 }
 
 #home-menu #home-buttons {
@@ -901,6 +931,14 @@ body > canvas {
 		font-size: 1rem;
 	}
 
+	#home-menu #credits h2 {
+		font-size: 1rem;
+	}
+
+	#home-menu #credits div {
+		height: 1rem;
+	}
+
 	/* Game list */
 	main#games-grid, aside#side-menu {
 		flex: 1;
@@ -942,5 +980,21 @@ body > canvas {
 	#menu-buttons #menu-buttons-inner {
 		gap: 150px;
 		justify-content: center;
+	}
+
+	#home-menu {
+		gap: 120px;
+	}
+
+	#home-menu #credits {
+		margin-top: -105px;
+	}
+
+	#home-menu #credits h2 {
+		font-size: 3rem;
+	}
+
+	#home-menu #credits div {
+		height: 3rem;
 	}
 }

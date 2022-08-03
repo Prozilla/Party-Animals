@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="256"
+   height="256"
+   viewBox="0 0 67.733332 67.733335"
+   version="1.1"
+   id="svg5"
+   inkscape:export-filename="C:\Users\Prozilla\Pictures\GameDev\DaisyGames_Large.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   inkscape:version="1.1 (c68e22c387, 2021-05-23)"
+   sodipodi:docname="DaisyGames.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#505050"
+     bordercolor="#ffffff"
+     borderopacity="1"
+     inkscape:pageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     units="px"
+     inkscape:zoom="3.1108586"
+     inkscape:cx="124.88514"
+     inkscape:cy="143.52951"
+     inkscape:window-width="2560"
+     inkscape:window-height="1377"
+     inkscape:window-x="1912"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       sodipodi:type="star"
+       style="fill:#ffffff;stroke-width:20;stroke-linecap:round;stroke-linejoin:round;fill-opacity:1"
+       id="path846"
+       inkscape:flatsided="false"
+       sodipodi:sides="8"
+       sodipodi:cx="122.79568"
+       sodipodi:cy="117.65241"
+       sodipodi:r1="144.0325"
+       sodipodi:r2="108.02437"
+       sodipodi:arg1="0.78539816"
+       sodipodi:arg2="1.1780972"
+       inkscape:rounded="0.25"
+       inkscape:randomized="0"
+       d="m 224.64204,219.49877 c -10.70238,10.70237 -46.5239,-7.83694 -60.50722,-2.04486 -13.98333,5.79209 -26.2037,44.231 -41.33914,44.231 -15.13544,0 -27.355811,-38.43891 -41.339134,-44.23099 -13.983326,-5.79209 -49.804852,12.74722 -60.507227,2.04485 -10.702373,-10.70237 7.836939,-46.52389 2.044857,-60.50722 -5.792083,-13.98332 -44.230999,-26.20369 -44.231,-41.33914 -1e-6,-15.13544 38.438914,-27.355806 44.230996,-41.339129 5.792083,-13.983326 -12.747227,-49.804852 -2.044853,-60.507227 10.702372,-10.7023726 46.523894,7.83694 60.507218,2.044857 13.983325,-5.792083 26.203693,-44.230999 41.339143,-44.231 15.13544,0 27.35581,38.438914 41.33913,44.230997 13.98332,5.792083 49.80485,-12.7472277 60.50723,-2.044854 10.70237,10.702372 -7.83694,46.523894 -2.04486,60.507218 5.79208,13.983325 44.231,26.203698 44.231,41.339138 0,15.13544 -38.43892,27.35581 -44.231,41.33913 -5.79208,13.98333 12.74723,49.80486 2.04486,60.50723 z"
+       transform="matrix(0.23513212,0,0,0.23513212,4.9934591,6.2028061)" />
+    <circle
+       style="fill:#fed330;fill-opacity:1;stroke-width:4.78888;stroke-linecap:round;stroke-linejoin:round"
+       id="path1048"
+       cx="33.866669"
+       cy="33.866669"
+       r="13.546667" />
+  </g>
+</svg>
