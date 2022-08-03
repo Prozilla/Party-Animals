@@ -30,6 +30,8 @@
 
 	--menu-buttons-width: 35px;
 	--menu-buttons-margin: 50px;
+
+	--background-scroll-speed: 20s;
 }
 
 html, body {
@@ -47,20 +49,42 @@ body {
 	z-index: -2;
 }
 
-body:after {
+body:after, #loading-screen:after, #lost-connection-screen:after {
 	--scale: 300px;
 
 	content: "";
 	position: fixed;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	mask: url("../media/backgroundPattern.svg") repeat center;
-		-webkit-mask: url("../media/backgroundPattern.svg") repeat center;
+	top: calc(var(--scale) * -1);
+	left: calc(var(--scale) * -1);
+	width: calc(100% + var(--scale));
+	height: calc(100% + var(--scale));
+	background-color: var(--background-color-d);
+
+	mask: url("../media/backgroundPattern.svg") repeat;
+		-webkit-mask: url("../media/backgroundPattern.svg") repeat;
 	mask-size: var(--scale);
 		-webkit-mask-size: var(--scale);
-	background-color: var(--background-color-d);
+	mask-position: calc(var(--scale) * -1) calc(var(--scale) * -1);
+		-webkit-mask-position: calc(var(--scale) * -1) calc(var(--scale) * -1);
+
+	animation: slide var(--background-scroll-speed) linear infinite;
+}
+
+@keyframes slide {
+	100% {
+		mask-position: var(--scale) var(--scale);
+		-webkit-mask-position: var(--scale) var(--scale);
+	}
+}
+
+@-webkit-keyframes slide {
+	100% {
+		mask-position: var(--scale) var(--scale);
+		-webkit-mask-position: var(--scale) var(--scale);
+	}
+}
+
+body:after {
 	z-index: -1;
 }
 
@@ -758,8 +782,8 @@ body > canvas {
 	color: var(--pink-a);
 }
 
-/* Loading screen */
-#loading-screen {
+/* Overlays */
+.overlay {
 	position: fixed;
 	display: flex;
 	justify-content: center;
@@ -770,16 +794,28 @@ body > canvas {
 	width: 100%;
 	height: 100%;
 	background-color: var(--background-color-a);
-	z-index: 300;
 }
 
-#loading-screen:not(.active) {
+.overlay:not(.active) {
 	display: none;
 	pointer-events: none;
 }
 
-#loading-screen h2 {
+.overlay h2 {
 	font-size: 3rem;
+}
+
+/* Loading screen */
+#loading-screen {
+	z-index: 300;
+}
+
+#loading-screen:after {
+	z-index: 301;
+}
+
+#loading-screen * {
+	z-index: 302;
 }
 
 #loading-icon, #loading-icon:after {
@@ -828,26 +864,15 @@ body > canvas {
 
 /* Lost connection screen */
 #lost-connection-screen {
-	position: fixed;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	flex-direction: column;
-	left: 0;
-	top: 0;
-	width: 100%;
-	height: 100%;
-	background-color: var(--background-color-a);
 	z-index: 250;
 }
 
-#lost-connection-screen:not(.active) {
-	display: none;
-	pointer-events: none;
+#loading-screen:after {
+	z-index: 301;
 }
 
-#lost-connection-screen h2 {
-	font-size: 3rem;
+#loading-screen * {
+	z-index: 302;
 }
 
 /* Responsiveness */
