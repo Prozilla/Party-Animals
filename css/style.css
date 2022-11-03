@@ -49,6 +49,8 @@ body {
 	z-index: -2;
 }
 
+/* #region BACKGROUND PATTERN */
+
 body:after, #loading-screen:after, #lost-connection-screen:after {
 	--scale: 300px;
 
@@ -68,6 +70,7 @@ body:after, #loading-screen:after, #lost-connection-screen:after {
 		-webkit-mask-position: calc(var(--scale) * -1) calc(var(--scale) * -1);
 
 	animation: slide var(--background-scroll-speed) linear infinite;
+	z-index: -10;
 }
 
 @keyframes slide {
@@ -87,6 +90,10 @@ body:after, #loading-screen:after, #lost-connection-screen:after {
 body:after {
 	z-index: -1;
 }
+
+/* #endregion */
+
+/* #region TEXT */
 
 h1, h2 {
 	font-family: var(--title-font);
@@ -123,23 +130,9 @@ strong {
 	font-weight: 400;
 }
 
-body #main {
-	display: flex;
-	gap: var(--menu-buttons-margin);
-	width: 100%;
-	height: 100%;
-	overflow: hidden;
-}
+/* #endregion */
 
-body #main main {
-	position: relative	;
-	display: flex;
-	flex-direction: column;
-	width: 100%;
-	height: 100%;
-}
-
-/* Buttons */
+/* #region Buttons */
 button {
 	display: flex;
 	align-items: center;
@@ -185,7 +178,9 @@ button {
 	color: var(--text-color-c);
 }
 
-/* Scrollbars */
+/* #endregion */
+
+/* #region Scrollbars */
 body::-webkit-scrollbar, #chat-messages::-webkit-scrollbar, section::-webkit-scrollbar {
 	width: 20px;
 }
@@ -205,12 +200,34 @@ body::-webkit-scrollbar-thumb, #chat-messages::-webkit-scrollbar-thumb, section:
 	background-color: var(--background-color-a);
 }
 
-/* Shading */
+/* #endregion */
+
+/* #region MAIN */
+
+body #main {
+	display: flex;
+	gap: var(--menu-buttons-margin);
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+
+body #main main {
+	position: relative	;
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	height: 100%;
+}
+
 .highlight-top {
 	border-bottom: 5px solid var(--background-color-c);
 }
 
-/* Menus */
+/* #endregion */
+
+/* #region MENUS */
+
 #menu-buttons {
 	width: var(--menu-buttons-width);
 	background-color: var(--background-color-b);
@@ -296,7 +313,10 @@ body::-webkit-scrollbar-thumb, #chat-messages::-webkit-scrollbar-thumb, section:
 	pointer-events: none;
 }
 
-/* Home */
+/* #endregion */
+
+/* #region HOME */
+
 #home-menu {
 	display: flex;
 	gap: 60px;
@@ -361,7 +381,9 @@ body::-webkit-scrollbar-thumb, #chat-messages::-webkit-scrollbar-thumb, section:
 	justify-content: inherit;
 }
 
-/* Games */
+/* #endregion */
+
+/* #region GAMES */
 body > canvas {
 	position: absolute;
 	top: 0;
@@ -371,15 +393,21 @@ body > canvas {
 	z-index: 10;
 }
 
-/* Game list */
+#games-menu {
+	overflow-x: hidden;
+}
+
 #games-grid {
+	--gap: 35px;
+
 	display: flex;
+	gap: var(--gap);
 	flex-wrap: wrap;
 	align-content: flex-start;
 }
 
-#games-grid .game {
-	flex-basis: 50%;
+.game {
+	flex-basis: calc(50% - var(--gap) * 2);
 	display: flex;
 	gap: 10px;
 	align-items: center;
@@ -391,8 +419,34 @@ body > canvas {
 	cursor: pointer;
 }
 
-.game .game-thumbnail {
+.game.coming-soon {
+	opacity: 0.5;
+}
+
+.game.coming-soon .game-icon::before {
+	content: "Coming soon";
+	position: absolute;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	top: 0;
+	left: 0;
 	width: 100%;
+	height: 100%;
+	color: var(--text-color-b);
+	font-size: 3.5vw;
+    font-weight: 600;
+	transform: rotate(-25deg);
+	-webkit-transform: rotate(-25deg);
+}
+
+.game .game-icon {
+	--margin: 15%;
+
+	position: relative;
+	width: calc(100% - var(--margin));
+	margin: auto var(--margin);
+	padding: 10%;
 	background-color: white;
 	border-radius: var(--border-radius-a);
 	aspect-ratio: 1;
@@ -404,7 +458,9 @@ body > canvas {
 	margin: 0;
 }
 
-/* Player list */
+/* #endregion */
+
+/* #region PLAYER LIST */
 #player-list {
 	display: flex;
 	gap: 10px;
@@ -478,7 +534,7 @@ body > canvas {
 	--mask-image: url("../media/characters/spider.svg");
 }
 
-/* Character body colors*/
+/* Primary character colors*/
 .player .character.red, #character-preview.red {
 	background-color: var(--red-a);
 }
@@ -501,7 +557,7 @@ body > canvas {
 	background-color: var(--pink-a);
 }
 
-/* Character detail colors*/
+/* Secondary character colors*/
 .player .character.red .character-detail, #character-preview.red #character-preview-detail {
 	background-color: var(--red-b);
 }
@@ -528,7 +584,10 @@ body > canvas {
 	margin: 0;
 }
 
-/* Character preview */
+/* #endregion */
+
+/* #region PLAYER OPTIONS */
+
 #player-settings {
 	display: flex;
 	gap: 15px;
@@ -543,7 +602,6 @@ body > canvas {
 	--offset: 15px;
 }
 
-/* Player options */
 #player-options {
 	display: flex;
 	gap: 10px;
@@ -584,7 +642,9 @@ body > canvas {
 	height: fit-content;
 }
 
-/* Party options */
+/* #endregion */
+
+/* #region PARTY OPTIONS */
 #party-code-input {
 	display: flex;
 	gap: 10px;
@@ -608,7 +668,9 @@ body > canvas {
 	--secondary-background-color: var(--red-b);
 }
 
-/* Modal */
+/* #endregion */
+
+/* #region MODAL WINDOW */
 #modal {
 	display: none;
 	position: absolute;
@@ -692,7 +754,10 @@ body > canvas {
 	align-items: center;
 }
 
-/* Chat */
+/* #endregion */
+
+/* #region CHAT */
+
 #chat {
 	display: flex;
 	gap: 10px;
@@ -812,7 +877,9 @@ body > canvas {
 	color: var(--pink-a);
 }
 
-/* Overlays */
+/* #endregion */
+
+/* #region OVERLAYS */
 .overlay {
 	position: fixed;
 	display: flex;
@@ -905,7 +972,10 @@ body > canvas {
 	z-index: 302;
 }
 
-/* Responsiveness */
+/* #endregion */
+
+/* #region RESPONSIVENESS */
+
 @media screen and (max-width: 600px) {
 	:root {
 		--menu-buttons-margin: 30px;
@@ -966,6 +1036,16 @@ body > canvas {
 	}
 }
 
+@media screen and (max-width: 800px) {
+	.game {
+		flex-basis: calc(100% - var(--gap));
+	}
+
+	.game.coming-soon .game-icon::before {
+		font-size: 7.5vw;
+	}
+}
+
 @media screen and (min-width: 1500px) {
 	:root {
 		--menu-buttons-width: 45px;
@@ -998,3 +1078,5 @@ body > canvas {
 		height: 3rem;
 	}
 }
+
+/* #endregion */

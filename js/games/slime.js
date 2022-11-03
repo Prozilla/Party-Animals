@@ -14,7 +14,7 @@ const orbSize = 50;
 const maxOrbs = 50;
 let lastOrbSpawn;
 
-const orbImage = "media/assets/slime/candy";
+const orbImage = "media/games/slime/candy";
 
 // Player
 const startingScore = 30;
