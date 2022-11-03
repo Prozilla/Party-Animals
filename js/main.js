@@ -9,7 +9,7 @@ for (let i = 0; i < gameNames.length; i++) {
 	});
 }
 
-let debugMode = true; // Set to true for debugging
+let debugMode = false; // Set to true for debugging
 const localHosting = window.location.pathname.startsWith("/party-animals/");
 
 if (!localHosting) {

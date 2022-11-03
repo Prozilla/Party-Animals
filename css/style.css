@@ -1028,6 +1028,10 @@ body > canvas {
 		margin: 0 20px;
 	}
 
+	#modal #modal-inner #modal-title {
+		white-space: normal;
+	}
+
 	/* Chat */
 	#chat {
 		right: calc(var(--menu-buttons-width) + var(--menu-buttons-margin));
@@ -1071,11 +1075,11 @@ body > canvas {
 	}
 
 	#home-menu #credits h2 {
-		font-size: 3rem;
+		font-size: 3vw;
 	}
 
 	#home-menu #credits div {
-		height: 3rem;
+		height: 3vw;
 	}
 }
 

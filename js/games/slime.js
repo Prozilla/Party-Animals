@@ -184,24 +184,26 @@ class Slime extends GameScene {
 				if (key != this.playerData.id) {
 					const player = this.players[key];
 
-					if (this.playerData.score > player.score) {
+					if (this.playerData.score > player.score && !player.isDead) {
 						const distance = util.calculateDistance(this.playerData, player);
 
 						// Check if players intersect
-						if (distance < this.playerData.score - player.score)
-							killPlayer(player);
+						if (distance < this.playerData.score - player.score) {
+							this.killPlayer(player);
+							this.addScore(player.score / 2);
+						}
 					}
 				}
 			});
 		}
 	}
 
-	end(winner) {
+	endGame(winner) {
 		if (this.allowEndGame) {
 			this.orbsRef.off("child_added");
 			this.orbsRef.off("child_removed");
 
-			super.end(winner);
+			super.endGame(winner);
 		}
 	}
 }

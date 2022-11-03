@@ -44,8 +44,7 @@ export class GameScene extends Phaser.Scene {
 		this.hostId = currentHostId;
 		this.partyCode = currentPartyCode;
 
-		if (debugMode)
-			this.allowEndGame = false;
+		this.allowEndGame = !debugMode;
 		
 		window.addEventListener("mousemove", (event) => {this.updateMouse(event)});
 		window.addEventListener("touchmove", (event) => {this.updateMouse(event)});
@@ -89,7 +88,7 @@ export class GameScene extends Phaser.Scene {
 
 			this.players = snapshot.val();
 			this.playerData = this.players[this.playerData.id];
-	
+
 			let totalPlayers = 0;
 			let alivePlayers = 0;
 			let lastAlivePlayer;
@@ -133,9 +132,9 @@ export class GameScene extends Phaser.Scene {
 					}
 				}
 			});
-	
+
 			if (alivePlayers < 2 && totalPlayers > 0) {
-				this.end(lastAlivePlayer);
+				this.endGame(lastAlivePlayer);
 			}
 		});
 	
@@ -216,7 +215,7 @@ export class GameScene extends Phaser.Scene {
 		}
 	}
 
-	end(winner) {
+	endGame(winner) {
 		if (this.allowEndGame) {
 			// Remove event listeners
 			this.playersRef.off("value");
@@ -248,8 +247,6 @@ export class GameScene extends Phaser.Scene {
 		playerRef.update({
 			isDead: true
 		});
-	
-		this.addScore(player.score / 2);
 	}	
 
 }
