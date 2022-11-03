@@ -5,7 +5,7 @@ for (let i = 0; i < gameNames.length; i++) {
 	const gameName = gameNames[i];
 
 	import(`./games/${gameName}.js`).then(game => {
-		games[gameName] = game;
+		games[gameName.toLowerCase()] = game;
 	});
 }
 
@@ -339,7 +339,14 @@ function toggleClass(element, active, className) {
 	}
 
 	function launchGame(name) {
-		games[name].start(players, playerId, party.host, partyCode, debugMode);
+		name = name.toLowerCase();
+
+		try {
+			games[name].start(players, playerId, party.host, partyCode, debugMode);
+		} catch (error) {
+			console.log("Failed to launch game: " + name);
+			console.error(error);
+		}
 	}
 
 	function getPartyInviteLink() {
@@ -635,7 +642,7 @@ function toggleClass(element, active, className) {
 			newPlayerElement.innerHTML = `
 				<div class="character ${newPlayer.color.toLowerCase()} ${newPlayer.animal.toLowerCase()}"><div class="character-detail"></div></div>
 				<span>
-					<p class="name">${newPlayer.id != playerId ? newPlayer.name : newPlayer.name + "(you)"}</p>
+					<p class="name">${newPlayer.id != playerId ? newPlayer.name : newPlayer.name + " (you)"}</p>
 					<p class="score">Score: ${newPlayer.score}</p>
 				</span>`;
 
