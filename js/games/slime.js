@@ -1,4 +1,5 @@
-import { GameScene, Util, colors, gameConfig } from "./game.js";
+import { GameScene, gameConfig } from "./game.js";
+import { Util, colors } from "./util.js";
 
 export const name = "slime";
 
@@ -9,16 +10,19 @@ const backgroundColor = "#ffffff";
 // Orbs
 let orbs;
 const orbSpawnDelay = 500;
-const orbRadius = 20;
+const orbSize = 50;
 const maxOrbs = 50;
 let lastOrbSpawn;
+
+const orbImage = "media/assets/slime/candy";
 
 // Player
 const startingScore = 30;
 const scoreIncrease = 1;
-const startingSpeed = 1.5;
-const speedIncrease = 0.004;
+const startingSpeed = 1.5; // Unused
+const speedIncrease = 0.004; // Unused
 const speedMultiplier = 1 / 7;
+const pickupRadius = orbSize / 2;
 
 const util = new Util();
 
@@ -60,6 +64,12 @@ class Slime extends GameScene {
 		}
 	}
 
+	preload() {
+		super.preload();
+
+		this.load.svg(orbImage, `${orbImage}.svg`);
+	}
+
 	create() {
 		super.create();
 
@@ -98,8 +108,16 @@ class Slime extends GameScene {
 			const orb = snapshot.val();
 			const key = snapshot.key;
 
+			const imageId = util.generateColoredImage(this, orbImage, orb.color);
+
 			orbs[key] = orb;
-			orbs[key].gameObject = this.add.circle(orb.x, orb.y, orbRadius, `0x${orb.color}`);
+			const newOrb = orbs[key];
+
+			newOrb.gameObject = this.add.image(orb.x, orb.y, imageId);
+			newOrb.gameObject.displayWidth = orbSize;
+			newOrb.gameObject.displayHeight = orbSize;
+			newOrb.gameObject.rotation = util.randomRange(-180, 180);
+
 			this.orbsGroup.add(orbs[key].gameObject);
 		});
 	
@@ -134,10 +152,10 @@ class Slime extends GameScene {
 			Object.keys(orbs).forEach((key) => {
 				if (key != null) {
 					const orb = orbs[key];
-					const distance = util.calculateDistance(this.playerData, orb);
+					const distance = util.calculateDistance(this.playerData, orb) - pickupRadius;
 
 					if (distance < this.playerData.score * 1.5) {
-						if (distance < this.playerData.score - orbRadius) {
+						if (distance < this.playerData.score - orbSize / 2) {
 							collectOrb(orb);
 						} else {
 							// Pull orb towards player
