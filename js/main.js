@@ -11,7 +11,7 @@ for (let i = 0; i < gameNames.length; i++) {
 }
 
 // DEBUGGING
-let debugMode = true; // Set to true for debugging
+let debugMode = false; // Set to true for debugging
 const DISABLE_START_DELAY = true;
 const DISABLE_MIN_PLAYERS = true;
 
@@ -692,6 +692,8 @@ function getFutureDate(seconds) {
 			if (snapshot.key == "gameData") {
 				const startingGame = snapshot.val();
 
+				console.log("Starting game", startingGame);
+
 				const game = gameData[startingGame.name];
 
 				gameStartScreen.querySelector("#game-title").textContent = game.displayTitle;
@@ -724,6 +726,8 @@ function getFutureDate(seconds) {
 		partyRef.on("child_removed", (snapshot) => {
 			if (snapshot.key == "gameData") {
 				const players = snapshot.val().players;
+
+				console.log(players);
 
 				let winner;
 

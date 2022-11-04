@@ -186,7 +186,7 @@ export class GameScene extends Phaser.Scene {
 
 	update(time, delta) {
 		// Move player based on mouse position
-		if (this.mouseX != null && this.mouseY != null) {
+		if (this.mouseX != null && this.mouseY != null && !this.gameOver) {
 			const worldMouseX = parseInt(this.mouseX + this.cameras.main.scrollX);
 			const worldMouseY = parseInt(this.mouseY + this.cameras.main.scrollY);
 
@@ -207,13 +207,17 @@ export class GameScene extends Phaser.Scene {
 			x = util.clampValue(x, 0 + this.playerData.score / 2, this.worldSize - this.playerData.score / 2);
 			y = util.clampValue(y, 0 + this.playerData.score / 2, this.worldSize - this.playerData.score / 2);
 
-			if (parseInt(x) && parseInt(y))
+			if (parseInt(x) && parseInt(y) && !this.gameOver)
 				this.playerRef.update({x, y});
 		}
 	}
 
 	endGame(winner, force) {
 		if (this.allowEndGame || force) {
+			this.gameOver = true;
+
+			console.log("game over");
+
 			// Remove event listeners
 			this.playersRef.off("value");
 	
