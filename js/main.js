@@ -692,8 +692,6 @@ function getFutureDate(seconds) {
 			if (snapshot.key == "gameData") {
 				const startingGame = snapshot.val();
 
-				console.log("Starting game", startingGame);
-
 				const game = gameData[startingGame.name];
 
 				gameStartScreen.querySelector("#game-title").textContent = game.displayTitle;
@@ -723,11 +721,10 @@ function getFutureDate(seconds) {
 			}
 		});
 
+		// Fires when game ends
 		partyRef.on("child_removed", (snapshot) => {
 			if (snapshot.key == "gameData") {
 				const players = snapshot.val().players;
-
-				console.log(players);
 
 				let winner;
 
@@ -765,6 +762,9 @@ function getFutureDate(seconds) {
 					const newElement = createPlayerElement(playerState);
 					element.innerHTML = newElement.innerHTML;
 					element.classList = newElement.classList;
+
+					if (key == playerId)
+						characterPreview.classList = element.querySelector(".character").classList;
 				}
 			});
 		});
