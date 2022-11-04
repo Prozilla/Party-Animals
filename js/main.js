@@ -9,7 +9,7 @@ for (let i = 0; i < gameNames.length; i++) {
 	});
 }
 
-let debugMode = false; // Set to true for debugging
+let debugMode = true; // Set to true for debugging
 const localHosting = window.location.pathname.startsWith("/party-animals/");
 
 if (!localHosting) {
@@ -49,13 +49,21 @@ class Modal {
 		this.title = title;
 		this.body = body;
 	}
+
+	replaceText(key, replacement) {
+		this.title = this.title.replaceAll(`[${key}]`, replacement);
+		this.body = this.body.replaceAll(`[${key}]`, replacement);
+	}
 }
 
 const modals = {
 	"JOIN_PARTY": new Modal("Join a party", `
 		<span id="party-code-input">
 			<label for="party-code">Enter a party code</label>
-			<input id="party-code" maxlength="6" type="text">
+			<span>
+				<input id="party-code" maxlength="6" type="text">
+				<button class="text-button" id="submit-party-code">Join</button>
+			</span>
 		</span>`),
 	"INVITE_PLAYERS": new Modal("Invite players", `
 		<p><strong id="party-code">[PARTY_CODE]</strong></p>
@@ -66,7 +74,18 @@ const modals = {
 	"EMPTY_PARTY": new Modal("You can't leave yourself", `<p>You are already in an empty party!</p>`),
 	"NEED_MORE_PLAYERS": new Modal("You need more players", `<p>You can't launch a game by yourself. Invite more players to start playing.</p>`),
 	"NOT_HOST": new Modal("You are not the party host", `<p>Only the party host can launch a game.</p>`),
+	"GAME_INFO": new Modal("[GAME_DISPLAY_TITLE]", `
+		<p><strong>[GAME_DISPLAY_TITLE]</strong> is [GAME_DESCRIPTION]</p>
+		<button class="text-button" id="launch-game" data-game-name="[GAME_TITLE]">Launch</button>`),
 };
+
+const gameDescriptions = {
+	"slime": "a game where you have to eat candy as fast as you can to outgrow other players and consume them.",
+	"tron": "coming soon.",
+	"tanks": "coming soon.",
+	"dogfight": "coming soon.",
+	"draw-battle": "coming soon.",
+}
 
 function randomFromArray(array) {
 	return array[Math.floor(Math.random() * array.length)];
@@ -315,13 +334,29 @@ function toggleClass(element, active, className) {
 		}
 	}
 
+	function createPlayerElement(player) {
+		const element = document.createElement("div");
+		element.classList.add("player");
+		element.innerHTML = `
+			<div class="character ${player.color.toLowerCase()} ${player.animal.toLowerCase()}"><div class="character-detail"></div></div>
+			<span>
+				<p class="name">${player.name}</p>
+				<p class="score">Score: ${player.score}</p>
+			</span>`;
+
+		if (player.id == playerId) {
+			element.classList.add("self");
+		} else if (player.id == party.host) {
+			element.classList.add("host");
+		}
+
+		return element;
+	}
+
 	function setPlayerName(name) {
 		playerNameInput.value = name;
 
 		playerRef.update({name});
-
-		if (party.host == playerId)
-			partyName.innerText = convertToPossessive(players[playerId].name) + " party";
 
 		storePlayerData();
 	}
@@ -371,9 +406,7 @@ function toggleClass(element, active, className) {
 		}
 	}
 
-	function showModal(modalContent) {
-		const html = modalContent.body.replace("[PARTY_CODE]", partyCode).replace("[PARTY_LINK]", getPartyInviteLink());
-
+	function showModal(modalContent, replacements) {
 		let modalKey;
 		for (const [key, value] of Object.entries(modals)) {
 			if (value == modalContent) {
@@ -386,20 +419,29 @@ function toggleClass(element, active, className) {
 		if (debugMode)
 			console.log(`Showing "${modalKey}" modal`);
 
-		modalTitle.textContent = modalContent.title;
-		modalBody.innerHTML = html;
+		const newModal = new Modal(modalContent.title, modalContent.body);
+		newModal.replaceText("PARTY_CODE", partyCode);
+		newModal.replaceText("PARTY_LINK", getPartyInviteLink());
+
+		if (replacements != null)
+			for (const [key, value] of Object.entries(replacements)) {
+				newModal.replaceText(key, value);
+			}
+
+		modalTitle.textContent = newModal.title;
+		modalBody.innerHTML = newModal.body;
 
 		if (modalKey == "JOIN_PARTY") {
 			const partyCodeInput = modal.querySelector("#party-code");
+			const partyCodeButton = modal.querySelector("#submit-party-code");
 
 			// Remove spaces from party code input field
 			partyCodeInput.addEventListener("input", () => {
 				partyCodeInput.value = partyCodeInput.value.split(" ").join("");
 			});
 
-			function processPartyCodeKeyPress(event) {
-				// TO DO: Should show modal to user when they try to join their own party
-				if (event.key == "Enter" && partyCodeInput.value.length == 6 && partyCodeInput.value.toUpperCase() != partyCode) {
+			function submitPartyCode() {
+				if (partyCodeInput.value.length == 6 && partyCodeInput.value.toUpperCase() != partyCode) {
 					firebase.database().ref(`parties/${partyCode}/code`).once("value", snapshot => {
 						if (snapshot.exists()) {
 							closeModal();
@@ -413,10 +455,34 @@ function toggleClass(element, active, className) {
 				}
 			}
 
-			// Listen for enter key press
+			function processPartyCodeKeyPress(event) {
+				// TO DO: Should show modal to user when they try to join their own party
+				if (event.key == "Enter")
+					submitPartyCode()
+			}
+
 			partyCodeInput.addEventListener("keypress", processPartyCodeKeyPress);
+			partyCodeButton.addEventListener("click", submitPartyCode);
 		} else if (modalKey == "INVITE_PLAYERS") {
 			modalBody.addEventListener("click", handleModalClick);
+		} else if (modalKey == "GAME_INFO") {
+			const launchButton = modalBody.querySelector("#launch-game");
+
+			if (!gameNames.includes(launchButton.getAttribute("data-game-name"))) {
+				launchButton.remove();
+			} else if (party.host != playerId) {
+				launchButton.classList.add("disabled");
+			} else {
+				const title = launchButton.getAttribute("data-game-name");
+
+				launchButton.addEventListener("click", () => {
+					if (Object.keys(players).length >= minPlayers || debugMode) {
+						launchGame(title);
+					} else {
+						showModal(modals.NEED_MORE_PLAYERS);
+					}
+				});
+			}
 		}
 
 		modal.classList.add("active");
@@ -549,8 +615,10 @@ function toggleClass(element, active, className) {
 
 		hostRef.on("value", (snapshot) => {
 			const host = snapshot.val();
-			if (host != null)
-				partyName.innerText = convertToPossessive(host.name) + " party";
+
+			if (host != null) {
+				partyName.innerText = host.id != playerId ? convertToPossessive(host.name) + " party" : "Your party";
+			}
 		});
 	}
 
@@ -581,48 +649,9 @@ function toggleClass(element, active, className) {
 				const element = playerElements[key];
 
 				if (element) {
-					element.querySelector(".name").innerText = key != playerId ? playerState.name : `${playerState.name} (you)`;
-					element.querySelector(".score").innerText = `Score: ${playerState.score}`;
-
-					const character = element.querySelector(".character");
-
-					// Update color
-					if (!character.classList.contains(playerState.color.toLowerCase())) {
-						// Remove previous color
-						colors.forEach(color => {
-							color = color.toLowerCase();
-							if (character.classList.contains(color)) {
-								character.classList.remove(color);
-
-								if (playerState.id == playerId)
-									characterPreview.classList.remove(color);
-							}
-						});
-
-						// Add new color
-						character.classList.add(playerState.color.toLowerCase());
-						if (playerState.id == playerId)
-							characterPreview.classList.add(playerState.color.toLowerCase());
-					}
-
-					// Update animal
-					if (!character.classList.contains(playerState.animal.toLowerCase())) {
-						// Remove previous animal
-						animals.forEach(animal => {
-							animal = animal.toLowerCase();
-							if (character.classList.contains(animal)) {
-								character.classList.remove(animal);
-
-								if (playerState.id == playerId)
-									characterPreview.classList.remove(animal);
-							}
-						});
-
-						// Add new animal
-						character.classList.add(playerState.animal.toLowerCase());
-						if (playerState.id == playerId)
-							characterPreview.classList.add(playerState.animal.toLowerCase());
-					}
+					const newElement = createPlayerElement(playerState);
+					element.innerHTML = newElement.innerHTML;
+					element.classList = newElement.classList;
 				}
 			});
 		});
@@ -637,14 +666,7 @@ function toggleClass(element, active, className) {
 			if (debugMode)
 				console.log("Player joined: " + newPlayer.id);
 
-			const newPlayerElement = document.createElement("div");
-			newPlayerElement.classList.add("player");
-			newPlayerElement.innerHTML = `
-				<div class="character ${newPlayer.color.toLowerCase()} ${newPlayer.animal.toLowerCase()}"><div class="character-detail"></div></div>
-				<span>
-					<p class="name">${newPlayer.id != playerId ? newPlayer.name : newPlayer.name + " (you)"}</p>
-					<p class="score">Score: ${newPlayer.score}</p>
-				</span>`;
+			const newPlayerElement = createPlayerElement(newPlayer);
 
 			if (newPlayer.id == playerId)
 				characterPreview.classList.add(newPlayer.color.toLowerCase(), newPlayer.animal.toLowerCase());
@@ -664,14 +686,16 @@ function toggleClass(element, active, className) {
 			if (debugMode)
 				console.log("Player left: " + removedKey);
 
-			console.log(lastLeftParty);
 			if (removedKey == playerId && lastLeftParty != partyCode) {
 				console.log("Lost connection to party with code: " + partyCode);
 				lostConnectionScreen.classList.add("active");
 			}
 
-			playerList.removeChild(playerElements[removedKey]);
-			delete playerElements[removedKey];
+			const oldPlayerElement = playerElements[removedKey];
+			if (oldPlayerElement) {
+				playerList.removeChild(oldPlayerElement);
+				delete playerElements[removedKey];
+			}
 
 			showChatMessage(removedPlayer.name, removedPlayer.color, "has left the party.", false);
 		});
@@ -777,23 +801,26 @@ function toggleClass(element, active, className) {
 
 		document.body.addEventListener("click", (event) => {
 			const target = event.target;
-			if (!modal.firstElementChild.contains(target) && modal.classList.contains("active") && allowClickingModalAway) {
+
+			const clickedInsideModal = modal.firstElementChild.contains(target);
+
+			if (!clickedInsideModal && modal.classList.contains("active") && allowClickingModalAway) {
 				closeModal();
-				console.log(target);
 			}
-		})
+		});
 
 		// Games
-		gamesGrid.firstElementChild.addEventListener("click", () => {
-			if (party.host == playerId) {
-				if (Object.keys(players).length >= minPlayers || debugMode) {
-					launchGame("slime");
-				} else {
-					showModal(modals.NEED_MORE_PLAYERS);
-				}
-			} else {
-				showModal(modals.NOT_HOST);
-			}
+		gamesGrid.addEventListener("click", (event) => {
+			const target = event.target;
+			const gameElement = target.closest(".game");
+
+			if (gameElement == null)
+				return;
+
+			const title = gameElement.getAttribute("data-game-title");
+			const displayTitle = gameElement.querySelector(".game-title").textContent;
+
+			showModal(modals.GAME_INFO, {"GAME_DISPLAY_TITLE": displayTitle, "GAME_TITLE": title, "GAME_DESCRIPTION": gameDescriptions[title]});
 		});
 
 		// Chat
@@ -812,6 +839,7 @@ function toggleClass(element, active, className) {
 				chat.classList.remove("active");
 			} else {
 				chat.classList.add("active");
+				chatInput.focus();
 			}
 		});
 

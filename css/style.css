@@ -28,7 +28,7 @@
 	--title-font: "Fredoka One", Verdana, sand-serif;
 	--body-font: "Fredoka", sand-serif;
 
-	--menu-buttons-width: 35px;
+	--menu-buttons-width: 45px;
 	--menu-buttons-margin: 50px;
 
 	--background-scroll-speed: 20s;
@@ -267,6 +267,7 @@ body #main main {
 #menus {
 	flex: 1;
 	position: relative;
+	overflow: hidden;
 }
 
 #menus > section {
@@ -581,7 +582,19 @@ body > canvas {
 }
 
 .player .name, .player .score {
+	display: flex;
+    gap: 0.5rem;
+    align-items: center;
 	margin: 0;
+}
+
+.player .name i, .player .score i {
+	color: var(--blue-a);
+	font-size: 0.85rem;
+}
+
+.player.self .name {
+	font-weight: 600;
 }
 
 /* #endregion */
@@ -595,11 +608,15 @@ body > canvas {
 }
 
 #character-preview {
+	--offset: 15px;
+
 	height: 60px;
+	margin-left: var(--offset);
+    margin-top: var(--offset);
 }
 
 #character-preview #character-preview-detail {
-	--offset: 15px;
+	--offset: inherit;
 }
 
 #player-options {
@@ -649,10 +666,18 @@ body > canvas {
 	display: flex;
 	gap: 10px;
 	align-items: center;
+	flex-wrap: wrap;
+}
+
+#party-code-input span {
+	display: flex;
+	gap: inherit;
 }
 
 #party-code-input #party-code {
 	text-transform: uppercase;
+	width: 5rem;
+	max-width: 5rem;
 }
 
 #party-options {
@@ -670,7 +695,8 @@ body > canvas {
 
 /* #endregion */
 
-/* #region MODAL WINDOW */
+/* #region MODAL WINDOWS */
+
 #modal {
 	display: none;
 	position: absolute;
@@ -752,6 +778,11 @@ body > canvas {
 	gap: 10px;
 	justify-content: center;
 	align-items: center;
+}
+
+#modal[data-modal-key="GAME_INFO"] #launch-game.disabled {
+	opacity: 0.5;
+	pointer-events: none;
 }
 
 /* #endregion */
