@@ -74,8 +74,24 @@
 				<section id="games-menu">
 					<div id="games-grid">
 						<div class="game highlight-top" data-game-title="slime">
-							<img class="game-thumbnail" src="media/thumbnails/Slime.png">
+							<img class="game-icon" src="media/games/slime/candy.svg">
 							<h2 class="game-title">Candy Rush</h2>
+						</div>
+						<div class="game highlight-top coming-soon" data-game-title="tron">
+							<div class="game-icon"></div>
+							<h2 class="game-title">Tron</h2>
+						</div>
+						<div class="game highlight-top coming-soon" data-game-title="tanks">
+							<div class="game-icon"></div>
+							<h2 class="game-title">Tanks</h2>
+						</div>
+						<div class="game highlight-top coming-soon" data-game-title="dogfight">
+							<div class="game-icon"></div>
+							<h2 class="game-title">Dogfight</h2>
+						</div>
+						<div class="game highlight-top coming-soon" data-game-title="draw-battle">
+							<div class="game-icon"></div>
+							<h2 class="game-title">Draw Battle</h2>
 						</div>
 					</div>
 				</section>
@@ -101,7 +117,7 @@
 						</div>
 						<div id="player-options">
 							<span id="player-name-input">
-								<label for="player-name">Your name</label>
+								<label for="player-name">Your name:</label>
 								<div>
 									<input id="player-name" maxlength="16" type="text">
 									<button class="icon-button" id="randomize-name" title="Randomize name"><i class="fa-solid fa-dice-five"></i></button>
@@ -149,6 +165,21 @@
 		<button class="text-button" id="reconnect">Reconnect</button>
 	</div>
 
+	<div id="game-start-screen" class="overlay">
+		<h2 id="game-start-timer">Starting...</h2>
+		<img id="game-icon">
+		<h2 id="game-title"></h2>
+	</div>
+
+	<div id="game-end-screen" class="overlay">
+		<canvas id="confetti"></canvas>
+		<h2 id="title">Winner</h2>
+		<div class="character">
+			<div class="character-detail"></div>
+		</div>
+		<h2 id="player-name"></h2>
+	</div>
+
 	<!-- Initialize firebase  -->
 	<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -168,6 +199,7 @@
 
 	<script src="js/phaser.min.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
+	<script src="js/confetti.js"></script>
 	<script type="module" src="js/main.js"></script>
 </body>
 </html>
