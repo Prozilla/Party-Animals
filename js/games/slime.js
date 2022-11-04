@@ -58,8 +58,14 @@ class Slime extends GameScene {
 
 		if (debugMode) {
 			window.addEventListener("keypress", (event) => {
-				if (event.key == "e")
-					this.addScore(5);
+				switch (event.key) {
+					case "e":
+						this.addScore(5);
+						break;
+					case "w":
+						this.endGame(this.playerData, true);
+						break;
+				}
 			});
 		}
 	}
@@ -198,12 +204,12 @@ class Slime extends GameScene {
 		}
 	}
 
-	endGame(winner) {
-		if (this.allowEndGame) {
+	endGame(winner, force) {
+		if (this.allowEndGame || force) {
 			this.orbsRef.off("child_added");
 			this.orbsRef.off("child_removed");
 
-			super.endGame(winner);
+			super.endGame(winner, force);
 		}
 	}
 }

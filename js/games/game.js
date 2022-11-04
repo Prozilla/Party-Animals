@@ -75,11 +75,8 @@ export class GameScene extends Phaser.Scene {
 			}
 	
 			this.gameDataRef.set({
-				name: this.title,
 				players: this.players,
 			});
-	
-			this.gameDataRef.onDisconnect().remove();
 		}
 	
 		this.playersRef.on("value", (snapshot) => {
@@ -215,8 +212,8 @@ export class GameScene extends Phaser.Scene {
 		}
 	}
 
-	endGame(winner) {
-		if (this.allowEndGame) {
+	endGame(winner, force) {
+		if (this.allowEndGame || force) {
 			// Remove event listeners
 			this.playersRef.off("value");
 	
@@ -229,7 +226,8 @@ export class GameScene extends Phaser.Scene {
 			// Delete game data
 			this.gameDataRef.remove();
 	
-			this.sys.game.destroy(true);
+			if (this.sys.game)
+				this.sys.game.destroy(true);
 		}
 	}
 

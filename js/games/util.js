@@ -25,7 +25,7 @@ export class Util {
 		const id = this.generateId(10);
 		const newTexture = scene.textures.createCanvas(id, image.width, image.height);
 
-		const context = newTexture.getSourceImage().getContext("2d");
+		const context = newTexture.getSourceImage().getContext("2d", {willReadFrequently: true});
 		context.drawImage(image, 0, 0);
 
 		const pixels = context.getImageData(0, 0, image.width, image.height);

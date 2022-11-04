@@ -51,7 +51,7 @@ body {
 
 /* #region BACKGROUND PATTERN */
 
-body:after, #loading-screen:after, #lost-connection-screen:after {
+body:after, .overlay:after {
 	--scale: 300px;
 
 	content: "";
@@ -492,18 +492,20 @@ body > canvas {
 	border-radius: var(--border-radius-full);
 }
 
-.player .character, #character-preview {
+.character, #character-preview {
+	--size: 40px;
+
 	position: relative;
-	height: 40px;
+	height: var(--size);
 	aspect-ratio: 1;
 	border-radius: var(--border-radius-full);
 	background-color: var(--background-color-a);
 	box-sizing: border-box;
 }
 
-.player .character .character-detail, #character-preview #character-preview-detail {
+.character .character-detail, #character-preview #character-preview-detail {
 	position: absolute;
-	--offset: 10px;
+	--offset: calc(var(--size) / 4);
 	--mask-image: url("../media/characters/pig.svg");
 	top: calc(var(--offset) * -1);
 	left: calc(var(--offset) * -1);
@@ -516,68 +518,68 @@ body > canvas {
 }
 
 /* Character shapes (animals) */
-.player .character.pig .character-detail, #character-preview.pig #character-preview-detail {
+.character.pig .character-detail, #character-preview.pig #character-preview-detail {
 	--mask-image: url("../media/characters/pig.svg");
 }
-.player .character.cat .character-detail, #character-preview.cat #character-preview-detail {
+.character.cat .character-detail, #character-preview.cat #character-preview-detail {
 	--mask-image: url("../media/characters/cat.svg");
 }
-.player .character.bear .character-detail, #character-preview.bear #character-preview-detail {
+.character.bear .character-detail, #character-preview.bear #character-preview-detail {
 	--mask-image: url("../media/characters/bear.svg");
 }
-.player .character.sheep .character-detail, #character-preview.sheep #character-preview-detail {
+.character.sheep .character-detail, #character-preview.sheep #character-preview-detail {
 	--mask-image: url("../media/characters/sheep.svg");
 }
-.player .character.dog .character-detail, #character-preview.dog #character-preview-detail {
+.character.dog .character-detail, #character-preview.dog #character-preview-detail {
 	--mask-image: url("../media/characters/dog.svg");
 }
-.player .character.spider .character-detail, #character-preview.spider #character-preview-detail {
+.character.spider .character-detail, #character-preview.spider #character-preview-detail {
 	--mask-image: url("../media/characters/spider.svg");
 }
 
 /* Primary character colors*/
-.player .character.red, #character-preview.red {
+.character.red, #character-preview.red {
 	background-color: var(--red-a);
 }
-.player .character.orange, #character-preview.orange {
+.character.orange, #character-preview.orange {
 	background-color: var(--orange-a);
 }
-.player .character.yellow, #character-preview.yellow {
+.character.yellow, #character-preview.yellow {
 	background-color: var(--yellow-a);
 }
-.player .character.green, #character-preview.green {
+.character.green, #character-preview.green {
 	background-color: var(--green-a);
 }
-.player .character.blue, #character-preview.blue {
+.character.blue, #character-preview.blue {
 	background-color: var(--blue-a);
 }
-.player .character.purple, #character-preview.purple {
+.character.purple, #character-preview.purple {
 	background-color: var(--purple-a);
 }
-.player .character.pink, #character-preview.pink {
+.character.pink, #character-preview.pink {
 	background-color: var(--pink-a);
 }
 
 /* Secondary character colors*/
-.player .character.red .character-detail, #character-preview.red #character-preview-detail {
+.character.red .character-detail, #character-preview.red #character-preview-detail {
 	background-color: var(--red-b);
 }
-.player .character.orange .character-detail, #character-preview.orange #character-preview-detail {
+.character.orange .character-detail, #character-preview.orange #character-preview-detail {
 	background-color: var(--orange-b);
 }
-.player .character.yellow .character-detail, #character-preview.yellow #character-preview-detail {
+.character.yellow .character-detail, #character-preview.yellow #character-preview-detail {
 	background-color: var(--yellow-b);
 }
-.player .character.green .character-detail, #character-preview.green #character-preview-detail {
+.character.green .character-detail, #character-preview.green #character-preview-detail {
 	background-color: var(--green-b);
 }
-.player .character.blue .character-detail, #character-preview.blue #character-preview-detail {
+.character.blue .character-detail, #character-preview.blue #character-preview-detail {
 	background-color: var(--blue-b);
 }
-.player .character.purple .character-detail, #character-preview.purple #character-preview-detail {
+.character.purple .character-detail, #character-preview.purple #character-preview-detail {
 	background-color: var(--purple-b);
 }
-.player .character.pink .character-detail, #character-preview.pink #character-preview-detail {
+.character.pink .character-detail, #character-preview.pink #character-preview-detail {
 	background-color: var(--pink-b);
 }
 
@@ -1001,6 +1003,37 @@ body > canvas {
 
 #loading-screen * {
 	z-index: 302;
+}
+
+/* Game transitions */
+#game-start-screen, #game-end-screen {
+	z-index: 200;
+}
+
+#game-start-screen #game-start-timer {
+	font-size: 2rem;
+	margin-bottom: 5rem;
+}
+
+#game-start-screen #game-icon {
+	width: 10rem;
+	height: 10rem;
+}
+
+#game-end-screen #confetti {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
+
+#game-end-screen h2#title {
+	margin-bottom: 5rem;
+}
+
+#game-end-screen .character {
+	--size: 100px;
 }
 
 /* #endregion */

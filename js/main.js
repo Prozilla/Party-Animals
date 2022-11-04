@@ -1,3 +1,4 @@
+// GAMES
 const gameNames = ["slime"];
 const games = {};
 
@@ -9,7 +10,11 @@ for (let i = 0; i < gameNames.length; i++) {
 	});
 }
 
+// DEBUGGING
 let debugMode = true; // Set to true for debugging
+const DISABLE_START_DELAY = true;
+const DISABLE_MIN_PLAYERS = true;
+
 const localHosting = window.location.pathname.startsWith("/party-animals/");
 
 if (!localHosting) {
@@ -18,9 +23,11 @@ if (!localHosting) {
 	console.log("Debug mode enabled");
 }
 
-const minPlayers = 2;
+const MIN_PLAYERS = 2;
+const GAME_START_DELAY = 5;
+const GAME_END_DURATION = 5;
 
-const animals = [
+const ANIMALS = [
 	"Pig",
 	"Cat",
 	"Dog",
@@ -34,7 +41,7 @@ const animals = [
 	// "Horse",
 ];
 
-const colors = [
+const COLORS = [
 	"Red",
 	"Orange",
 	"Yellow",
@@ -79,12 +86,28 @@ const modals = {
 		<button class="text-button" id="launch-game" data-game-name="[GAME_TITLE]">Launch</button>`),
 };
 
-const gameDescriptions = {
-	"slime": "a game where you have to eat candy as fast as you can to outgrow other players and consume them.",
-	"tron": "coming soon.",
-	"tanks": "coming soon.",
-	"dogfight": "coming soon.",
-	"draw-battle": "coming soon.",
+const gameData = {
+	"slime": {
+		displayTitle: "Candy Rush",
+		description: "a game where you have to eat candy as fast as you can to outgrow other players and consume them.",
+		icon: "candy.svg",
+	},
+	"tron": {
+		displayTitle: "Tron",
+		description: "coming soon.",
+	},
+	"tanks": {
+		displayTitle: "Tanks",
+		description: "coming soon.",
+	},
+	"dogfight": {
+		displayTitle: "Dogfight",
+		description: "coming soon.",
+	},
+	"draw-battle": {
+		displayTitle: "Draw Battle",
+		description: "coming soon.",
+	},
 }
 
 function randomFromArray(array) {
@@ -152,6 +175,12 @@ function toggleClass(element, active, className) {
 	}
 }
 
+function getFutureDate(seconds) {
+	const time = new Date();
+	time.setSeconds(time.getSeconds() + seconds);
+	return time;
+}
+
 (function init() {
 
 	// Player
@@ -216,6 +245,10 @@ function toggleClass(element, active, className) {
 	// Lost connection screen
 	const lostConnectionScreen = document.querySelector("#lost-connection-screen");
 	const reconnectButton = document.querySelector("#reconnect");
+
+	// Game transitions
+	const gameStartScreen = document.querySelector("#game-start-screen");
+	const gameEndScreen = document.querySelector("#game-end-screen");
 
 	function moveMenuButtonsIndicator() {
 		const menuButton = menuButtonsParent.querySelector(`button[data-menu="${activeMenuId}"]`);
@@ -376,8 +409,28 @@ function toggleClass(element, active, className) {
 	function launchGame(name) {
 		name = name.toLowerCase();
 
+		if (!Object.keys(games).includes(name))
+			return;
+
+		const gameDataRef = firebase.database().ref(`parties/${partyCode}/gameData`);
+
+		const time = getFutureDate(!debugMode ? GAME_START_DELAY : 0).toUTCString();
+
+		console.log(time);
+
+		gameDataRef.set({
+			name,
+			start: time
+		});
+
+		gameDataRef.onDisconnect().remove();
+
+		closeModal();
+	}
+
+	function startGame(name) {
 		try {
-			games[name].start(players, playerId, party.host, partyCode, debugMode);
+			games[name].start(players, playerId, party.host, partyCode, debugMode && DISABLE_MIN_PLAYERS);
 		} catch (error) {
 			console.log("Failed to launch game: " + name);
 			console.error(error);
@@ -476,7 +529,7 @@ function toggleClass(element, active, className) {
 				const title = launchButton.getAttribute("data-game-name");
 
 				launchButton.addEventListener("click", () => {
-					if (Object.keys(players).length >= minPlayers || debugMode) {
+					if (Object.keys(players).length >= MIN_PLAYERS || debugMode) {
 						launchGame(title);
 					} else {
 						showModal(modals.NEED_MORE_PLAYERS);
@@ -577,9 +630,9 @@ function toggleClass(element, active, className) {
 	}
 	
 	function createUser() {
-		const animal = randomFromArray(animals);
+		const animal = randomFromArray(ANIMALS);
 		const name = createName(animal);
-		const color = randomFromArray(colors);
+		const color = randomFromArray(COLORS);
 
 		playerNameInput.value = name;
 
@@ -634,9 +687,65 @@ function toggleClass(element, active, className) {
 			}
 		});
 
+		// Fires when a game starts
 		partyRef.on("child_added", (snapshot) => {
-			if (snapshot.key == "gameData" && party.host != playerId) {
-				launchGame(snapshot.val().name);
+			if (snapshot.key == "gameData") {
+				const startingGame = snapshot.val();
+
+				const game = gameData[startingGame.name];
+
+				gameStartScreen.querySelector("#game-title").textContent = game.displayTitle;
+				gameStartScreen.querySelector("#game-icon").src = `media/games/${startingGame.name}/${game.icon}`;
+
+				const timer = gameStartScreen.querySelector("#game-start-timer");
+
+				const start = new Date(Date.parse(startingGame.start));
+				let time = start.getTime() - new Date().getTime();
+
+				timer.textContent = `Starting in ${Math.round(time / 1000) + 1}...`;
+
+				const timerInterval = setInterval(() => {
+					time = start.getTime() - new Date().getTime();
+
+					if (time <= 0) {
+						gameStartScreen.classList.remove("active");
+						clearInterval(timerInterval);
+
+						startGame(startingGame.name);
+					} else {
+						timer.textContent = `Starting in ${Math.round(time / 1000) + 1}...`;
+					}
+				}, 100);
+
+				gameStartScreen.classList.add("active");
+			}
+		});
+
+		partyRef.on("child_removed", (snapshot) => {
+			if (snapshot.key == "gameData") {
+				const players = snapshot.val().players;
+
+				let winner;
+
+				for (const [key, value] of Object.entries(players)) {
+					if (!winner || value.score > winner.score)
+						winner = players[key];
+				}
+
+				const character = gameEndScreen.querySelector(".character");
+
+				character.classList.add(winner.color.toLowerCase());
+				character.classList.add(winner.animal.toLowerCase());
+
+				gameEndScreen.querySelector("#player-name").textContent = winner.name;
+				gameEndScreen.classList.add("active");
+
+				startConfetti();
+
+				setTimeout(() => {
+					gameEndScreen.classList.remove("active");
+					stopConfetti();
+				}, GAME_END_DURATION * 1000);
 			}
 		});
 
@@ -723,16 +832,16 @@ function toggleClass(element, active, className) {
 		});
 
 		playerColorButton.addEventListener("click", () => {
-			const currentColorIndex = colors.indexOf(players[playerId].color);
-			const nextColor = colors[currentColorIndex + 1] || colors[0];
+			const currentColorIndex = COLORS.indexOf(players[playerId].color);
+			const nextColor = COLORS[currentColorIndex + 1] || COLORS[0];
 
 			setPlayerColor(nextColor);
 		});
 
 		playerAnimalButton.addEventListener("click", () => {
 			const currentAnimal = players[playerId].animal
-			const currentAnimalIndex = animals.indexOf(currentAnimal);
-			const nextAnimal = animals[currentAnimalIndex + 1] || animals[0];
+			const currentAnimalIndex = ANIMALS.indexOf(currentAnimal);
+			const nextAnimal = ANIMALS[currentAnimalIndex + 1] || ANIMALS[0];
 
 			// Update name
 			const splitName = players[playerId].name.split(" ");
@@ -817,10 +926,10 @@ function toggleClass(element, active, className) {
 			if (gameElement == null)
 				return;
 
-			const title = gameElement.getAttribute("data-game-title");
-			const displayTitle = gameElement.querySelector(".game-title").textContent;
+			const name = gameElement.getAttribute("data-game-title");
+			const game = gameData[name];
 
-			showModal(modals.GAME_INFO, {"GAME_DISPLAY_TITLE": displayTitle, "GAME_TITLE": title, "GAME_DESCRIPTION": gameDescriptions[title]});
+			showModal(modals.GAME_INFO, {"GAME_DISPLAY_TITLE": game.displayTitle, "GAME_TITLE": name, "GAME_DESCRIPTION": game.description});
 		});
 
 		// Chat
