@@ -26,7 +26,7 @@ export const gameConfig = {
 // }
 
 export class GameScene extends Phaser.Scene {
-	constructor(title, currentPlayers, playerId, currentHostId, currentPartyCode, debugMode, worldSize, startingScore, speedMultiplier) {
+	constructor(title, currentPlayers, playerId, currentHostId, currentPartyCode, debugMode, worldSize, startingScore) {
 		super();
 
 		console.log("Launching game: " + title);
@@ -34,7 +34,13 @@ export class GameScene extends Phaser.Scene {
 		this.title = title;
 		this.worldSize = worldSize;
 		this.startingScore = startingScore;
-		this.speedMultiplier = speedMultiplier;
+		this.allowEndGame = !debugMode;
+
+		this.speedMultiplier = 1;
+		this.constantSpeed = false;
+
+		this.frame = 0;
+		this.time = 0;
 
 		this.members = JSON.parse(JSON.stringify(currentPlayers));
 		this.players = currentPlayers;
@@ -44,10 +50,22 @@ export class GameScene extends Phaser.Scene {
 		this.hostId = currentHostId;
 		this.partyCode = currentPartyCode;
 
-		this.allowEndGame = !debugMode;
 		
 		window.addEventListener("mousemove", (event) => {this.updateMouse(event)});
 		window.addEventListener("touchmove", (event) => {this.updateMouse(event)});
+
+		if (debugMode) {
+			window.addEventListener("keypress", (event) => {
+				switch (event.key) {
+					case "e":
+						this.addScore(5);
+						break;
+					case "w":
+						this.endGame(this.playerData, true);
+						break;
+				}
+			});
+		}
 	}
 
 	preload() {
@@ -60,6 +78,16 @@ export class GameScene extends Phaser.Scene {
 	}
 
 	create() {
+		// Draw border
+		const graphics = this.add.graphics();
+
+		const color = Phaser.Display.Color.GetColor(40, 40, 40);
+		const thickness = 30;
+
+		graphics.lineStyle(thickness, color, 1);
+    	graphics.strokeRect(-thickness / 2, -thickness / 2, this.worldSize + thickness, this.worldSize + thickness);
+
+		// Set up data
 		this.gameDataRef = firebase.database().ref(`parties/${this.partyCode}/gameData`);
 		this.playersRef = this.gameDataRef.child("players");
 	
@@ -185,6 +213,9 @@ export class GameScene extends Phaser.Scene {
 	}
 
 	update(time, delta) {
+		this.frame++;
+		this.time = time;
+
 		// Move player based on mouse position
 		if (this.mouseX != null && this.mouseY != null && !this.gameOver) {
 			const worldMouseX = parseInt(this.mouseX + this.cameras.main.scrollX);
@@ -193,9 +224,15 @@ export class GameScene extends Phaser.Scene {
 			const distance = util.calculateDistance(this.playerData, {x: worldMouseX, y: worldMouseY});
 			let factor = util.clampValue(screen.width > screen.height ? distance / (screen.height / 4) : distance / (screen.width / 4), 0, 1);
 
-			const a = 250;
-			const b = a / 3 + 40;
-			const speed =  a / (this.playerData.score - this.startingScore + b) * this.speedMultiplier * delta;
+			let speed;
+
+			if (!this.constantSpeed) {
+				const a = 250;
+				const b = a / 3 + 40;
+				const speed =  a / (this.playerData.score - this.startingScore + b) * this.speedMultiplier * delta;
+			} else {
+				speed = this.speedMultiplier;
+			}
 
 			const newPosition = util.moveTowards(this.playerData.x, this.playerData.y, worldMouseX, worldMouseY, factor * speed);
 

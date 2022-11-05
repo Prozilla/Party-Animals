@@ -1,5 +1,5 @@
 // GAMES
-const gameNames = ["slime"];
+const gameNames = ["slime", "tron"];
 const games = {};
 
 for (let i = 0; i < gameNames.length; i++) {
@@ -11,7 +11,7 @@ for (let i = 0; i < gameNames.length; i++) {
 }
 
 // DEBUGGING
-let debugMode = false; // Set to true for debugging
+let debugMode = true; // Set to true for debugging
 const DISABLE_START_DELAY = true;
 const DISABLE_MIN_PLAYERS = true;
 
@@ -103,8 +103,8 @@ const gameData = {
 		icon: "candy.svg",
 	},
 	"tron": {
-		displayTitle: "Tron",
-		description: "coming soon.",
+		displayTitle: "Slithering Snakes",
+		description: "a game where you have to avoid running into your enemies to survive.",
 	},
 	"tanks": {
 		displayTitle: "Tanks",

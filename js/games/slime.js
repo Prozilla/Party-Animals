@@ -52,22 +52,11 @@ function collectOrb(orb) {
 
 class Slime extends GameScene {
 	constructor(currentPlayers, playerId, currentHostId, currentPartyCode, debugMode) {
-		super("Slime", currentPlayers, playerId, currentHostId, currentPartyCode, debugMode, worldSize, startingScore, speedMultiplier);
+		super("Slime", currentPlayers, playerId, currentHostId, currentPartyCode, debugMode, worldSize, startingScore);
+
+		this.speedMultiplier = speedMultiplier;
 
 		orbs = {};
-
-		if (debugMode) {
-			window.addEventListener("keypress", (event) => {
-				switch (event.key) {
-					case "e":
-						this.addScore(5);
-						break;
-					case "w":
-						this.endGame(this.playerData, true);
-						break;
-				}
-			});
-		}
 	}
 
 	preload() {
@@ -80,16 +69,6 @@ class Slime extends GameScene {
 		super.create();
 
 		this.orbsGroup = this.add.group();
-
-		// Draw border
-		const graphics = this.add.graphics();
-
-		const color = Phaser.Display.Color.GetColor(40, 40, 40);
-		const thickness = 30;
-
-		graphics.lineStyle(thickness, color, 1);
-    	graphics.strokeRect(-thickness / 2, -thickness / 2, worldSize + thickness, worldSize + thickness);
-
 		this.orbsRef = this.gameDataRef.child("orbs");
 
 		this.orbsRef.on("value", (snapshot) => {
@@ -132,8 +111,6 @@ class Slime extends GameScene {
 			orbs[key].gameObject.destroy();
 			delete orbs[key];
 		});
-
-		console.log(this.orbsRef);
 	}
 
 	update(time, delta) {
