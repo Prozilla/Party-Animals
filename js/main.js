@@ -24,8 +24,11 @@ if (!localHosting) {
 }
 
 const MIN_PLAYERS = 2;
+
+// TIMING
 const GAME_START_DELAY = 5;
 const GAME_END_DURATION = 5;
+const TOOLTIP_DURATION = 1;
 
 const ANIMALS = [
 	"Pig",
@@ -67,16 +70,23 @@ const modals = {
 	"JOIN_PARTY": new Modal("Join a party", `
 		<span id="party-code-input">
 			<label for="party-code">Enter a party code</label>
-			<span>
-				<input id="party-code" maxlength="6" type="text">
+			<span class="has-tooltip">
+				<input id="party-code" maxlength="6" type="text" autocomplete="off">
 				<button class="text-button" id="submit-party-code">Join</button>
+				<p class="tooltip top" style="--offset: 30px;">Invalid party code</p>
 			</span>
 		</span>`),
 	"INVITE_PLAYERS": new Modal("Invite players", `
-		<p><strong id="party-code">[PARTY_CODE]</strong></p>
+		<span class="has-tooltip">
+			<strong id="party-code">[PARTY_CODE]</strong>
+			<p class="tooltip top">Copied!</p>
+		</span>
 		<div id="invite-buttons">
 			<button class="text-button" id="copy-invite-code">Copy invite code</button>
-			<button class="text-button" id="copy-invite-link">Copy invite link</button>
+			<button class="text-button has-tooltip" id="copy-invite-link">
+				Copy invite link
+				<p class="tooltip top">Copied!</p>
+			</button>
 		</div>`),
 	"EMPTY_PARTY": new Modal("You can't leave yourself", `<p>You are already in an empty party!</p>`),
 	"NEED_MORE_PLAYERS": new Modal("You need more players", `<p>You can't launch a game by yourself. Invite more players to start playing.</p>`),
@@ -445,16 +455,35 @@ function getFutureDate(seconds) {
 		navigator.clipboard.writeText(text);
 	}
 
+	function showTooltip(element) {
+		const tooltip = element.querySelector(".tooltip");
+		tooltip.classList.add("active");
+
+		setTimeout(() => {
+			tooltip.classList.remove("active");
+		}, TOOLTIP_DURATION * 1000);
+	}
+
+	function copyInviteCode() {
+		setClipboard(partyCode);
+		showTooltip(modal.querySelector("#party-code").parentElement);
+	}
+
+	function copyInviteLink() {
+		setClipboard(getPartyInviteLink());
+		showTooltip(modal.querySelector("#copy-invite-link"));
+	}
+
 	function handleModalClick(event) {
 		const element = event.target;
 
 		switch (element.id) {
 			case "party-code":
 			case "copy-invite-code":
-				setClipboard(partyCode);
+				copyInviteCode();
 				break;
 			case "copy-invite-link":
-				setClipboard(getPartyInviteLink());
+				copyInviteLink();
 				break;
 		}
 	}
@@ -505,6 +534,8 @@ function getFutureDate(seconds) {
 							showMenu("party-menu");
 						}
 					});
+				} else {
+					showTooltip(partyCodeInput.parentElement);
 				}
 			}
 

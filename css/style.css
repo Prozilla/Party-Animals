@@ -25,8 +25,8 @@
 	--border-radius-a: 20px;
 	--border-radius-full: 9999px;
 
-	--title-font: "Fredoka One", Verdana, sand-serif;
-	--body-font: "Fredoka", sand-serif;
+	--title-font: "main-font", "secondary-font", "tertiary-font";
+	--body-font: "Fredoka", sans-serif;
 
 	--menu-buttons-width: 45px;
 	--menu-buttons-margin: 50px;
@@ -47,6 +47,10 @@ body {
 	font-family: var(--body-font);
 	box-sizing: border-box;
 	z-index: -2;
+}
+
+* {
+	box-sizing: border-box;
 }
 
 /* #region BACKGROUND PATTERN */
@@ -95,9 +99,37 @@ body:after {
 
 /* #region TEXT */
 
+@font-face {
+	font-family: "main-font";
+	src: url("../fonts/FredokaOne-Regular.ttf") format("truetype");
+	font-weight: 400;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: "secondary-font";
+	src: local("Verdana");
+	font-weight: 600;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: "tertiary-font";
+	src: local("sans-serif");
+	font-weight: 600;
+	font-style: normal;
+}
+
 h1, h2 {
 	font-family: var(--title-font);
+	font-weight: normal;
+}
+
+p, label {
+	font-family: var(--body-font);
 	font-weight: 400;
+	font-size: 1rem;
+	cursor: text;
 }
 
 button, .game, #title, #home-menu h1, #modal[data-modal-key="INVITE_PLAYERS"] p strong, #home-menu #credits {
@@ -132,7 +164,8 @@ strong {
 
 /* #endregion */
 
-/* #region Buttons */
+/* #region BUTTONS */
+
 button {
 	display: flex;
 	align-items: center;
@@ -142,8 +175,8 @@ button {
 	font-weight: 500;
 	font-size: 1rem;
 	text-decoration: none;
-	transition: 200ms ease-in-out;
-	-webkit-transition: 200ms ease-in-out;
+	transition: all 200ms ease-in-out;
+	-webkit-transition: all 200ms ease-in-out;
 	cursor: pointer;
 }
 
@@ -151,27 +184,28 @@ button {
 	--color: var(--text-color-a);
 	--primary-background-color: var(--green-a);
 	--secondary-background-color: var(--green-b);
+	--border-width: 5px;
+	--hover-border-width: 1px;
 
 	padding: 5px 10px;
 	color: var(--color);
 	background-color: var(--primary-background-color);
 	border-radius: var(--border-radius-a);
-	border-bottom: 5px solid var(--secondary-background-color);
+	border-bottom: var(--border-width) solid var(--secondary-background-color);
 	text-shadow: 0px -2px var(--secondary-background-color);
 }
 
 .text-button:hover {
-	--offset: 4px;
-	margin: calc(var(--offset) / 2) 0;
-	transform: translateY(var(--offset));
-	-ms-transform: translateY(var(--offset));
-	-webkit-transform: translateY(var(--offset));
-	border-bottom: 1px solid var(--secondary-background-color);
+	margin-top: calc(var(--border-width) - var(--hover-border-width));
+	transform: translateY(calc(var(--border-width) - var(--hover-border-width)));
+	-webkit-transform: translateY(calc(var(--border-width) - var(--hover-border-width)));
+	border-bottom: var(--hover-border-width) solid var(--secondary-background-color);
 }
 
 .icon-button {
 	color: var(--text-color-a);
 	background: none;
+	aspect-ratio: 1;
 }
 
 .icon-button:hover {
@@ -180,7 +214,7 @@ button {
 
 /* #endregion */
 
-/* #region Scrollbars */
+/* #region SCROLLBARS */
 body::-webkit-scrollbar, #chat-messages::-webkit-scrollbar, section::-webkit-scrollbar {
 	width: 20px;
 }
@@ -198,6 +232,61 @@ body::-webkit-scrollbar-thumb, #chat-messages::-webkit-scrollbar-thumb, section:
 
 #chat-messages::-webkit-scrollbar-thumb {
 	background-color: var(--background-color-a);
+}
+
+/* #endregion */
+
+/* #region TOOLTIPS*/
+
+.has-tooltip {
+	position: relative;
+}
+
+.tooltip {
+	--shadow: 0 0 15px var(--background-color-c);
+	--offset: 0px;
+
+	position: absolute;
+	padding: 7.5px 15px;
+	color: var(--text-color-a);
+	background-color: var(--purple-a);
+	border-radius: var(--border-radius-full);
+	filter: drop-shadow(var(--shadow));
+	-webkit-filter: drop-shadow(var(--shadow));
+	font-size: 1.25rem;
+	text-shadow: none;
+	white-space: nowrap;
+	transition: all 200ms;
+	pointer-events: none;
+	z-index: 1000;
+}
+
+.tooltip:not(.active) {
+	opacity: 0;
+	transform: translateY(20px);
+}
+
+.tooltip:after {
+	content: "\f0d7";
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	color: var(--purple-a);
+	font-family: "Font Awesome 6 Free";
+	font-weight: 900;
+	font-size: 2rem;
+	transform: translate(-50%, -50%);
+	-webkit-transform: translate(-50%, -50%);
+}
+
+.tooltip.top {
+	bottom: 100%;
+	left: calc(50% - var(--offset));
+	transform: translateX(-50%);
+}
+
+.tooltip.top:not(.active) {
+	transform: translate(-50%, 15px);
 }
 
 /* #endregion */
@@ -667,13 +756,15 @@ body > canvas {
 #party-code-input {
 	display: flex;
 	gap: 10px;
-	align-items: center;
 	flex-wrap: wrap;
 }
 
 #party-code-input span {
 	display: flex;
 	gap: inherit;
+}
+#party-code-input label {
+	margin: auto 0;
 }
 
 #party-code-input #party-code {
@@ -764,14 +855,14 @@ body > canvas {
 	margin: 0;
 }
 
-#modal[data-modal-key="INVITE_PLAYERS"] p {
+#modal[data-modal-key="INVITE_PLAYERS"] span {
 	display: flex;
 	justify-content: center;
 	margin-bottom: 10px !important;
 	font-size: 2rem;
 }
 
-#modal[data-modal-key="INVITE_PLAYERS"] p #party-code {
+#modal[data-modal-key="INVITE_PLAYERS"] span #party-code {
 	cursor: pointer;
 }
 
